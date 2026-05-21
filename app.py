@@ -45,7 +45,7 @@ with st.form("form_tarea"):
         sheet.append_row(nueva_fila)
 
         st.success("✅ Tarea creada")
-        st.experimental_rerun()
+        st.rerun()
 
 # =============================
 # MOSTRAR TABLA
