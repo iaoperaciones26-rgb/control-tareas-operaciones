@@ -60,22 +60,52 @@ def actualizar_estado(id_tarea, nuevo_estado):
             break
 
 # =============================
-# CREAR TAREA
+# HEADER (BOTÓN + VISTA)
 # =============================
-st.subheader("➕ Nueva tarea")
+col1, col2 = st.columns([1, 2])
 
-with st.form("form_tarea"):
-    tarea = st.text_input("Nombre de tarea")
-    responsable = st.text_input("Responsable")
-    estado = st.selectbox("Estado", estados)
+with col1:
+    if st.button("➕ Nueva tarea"):
+        st.session_state["mostrar_form"] = True
 
-    submit = st.form_submit_button("Guardar")
+with col2:
+    vista = st.radio(
+        "",
+        ["📋 Lista", "📌 Kanban"],
+        horizontal=True
+    )
 
-    if submit:
-        nuevo_id = f"OPE{len(df)+1:05d}"
-        sheet.append_row([nuevo_id, tarea, responsable, estado])
-        st.success("✅ Tarea creada")
-        st.rerun()
+# estado inicial
+if "mostrar_form" not in st.session_state:
+    st.session_state["mostrar_form"] = False
+
+# =============================
+# FORMULARIO (SOLO SI SE ACTIVA)
+# =============================
+if st.session_state["mostrar_form"]:
+
+    st.subheader("➕ Nueva tarea")
+
+    with st.form("form_tarea"):
+        tarea = st.text_input("Nombre de tarea")
+        responsable = st.text_input("Responsable")
+        estado = st.selectbox("Estado", estados)
+
+        colf1, colf2 = st.columns(2)
+
+        submit = colf1.form_submit_button("Guardar")
+        cancelar = colf2.form_submit_button("Cancelar")
+
+        if submit:
+            nuevo_id = f"OPE{len(df)+1:05d}"
+            sheet.append_row([nuevo_id, tarea, responsable, estado])
+            st.success("✅ Tarea creada")
+            st.session_state["mostrar_form"] = False
+            st.rerun()
+
+        if cancelar:
+            st.session_state["mostrar_form"] = False
+            st.rerun()
 
 # =============================
 # RECARGAR DATOS
@@ -87,29 +117,15 @@ if not df.empty:
     df["% avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
-# SELECTOR DE VISTA
-# =============================
-vista = st.radio(
-    "Selecciona vista",
-    ["📋 Lista", "📌 Kanban"],
-    horizontal=True
-)
-
-# =============================
-# VISTA LISTA (PRO)
+# VISTA LISTA (DEFAULT)
 # =============================
 if vista == "📋 Lista":
 
     st.subheader("📋 Vista Lista")
 
     if not df.empty:
-        df_view = df.copy()
-
-        # orden columnas
         columnas = ["id", "tarea", "responsable", "estado", "% avance"]
-        df_view = df_view[columnas]
-
-        st.dataframe(df_view, use_container_width=True)
+        st.dataframe(df[columnas], use_container_width=True)
 
 # =============================
 # VISTA KANBAN
@@ -149,14 +165,14 @@ else:
                         unsafe_allow_html=True
                     )
 
-                    col1, col2 = st.columns(2)
+                    colb1, colb2 = st.columns(2)
 
                     if i > 0:
-                        if col1.button("⬅️", key=f"b_{row['id']}"):
+                        if colb1.button("⬅️", key=f"b_{row['id']}"):
                             actualizar_estado(row["id"], estados[i - 1])
                             st.rerun()
 
                     if i < len(estados) - 1:
-                        if col2.button("➡️", key=f"n_{row['id']}"):
+                        if colb2.button("➡️", key=f"n_{row['id']}"):
                             actualizar_estado(row["id"], estados[i + 1])
                             st.rerun()
