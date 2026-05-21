@@ -39,7 +39,7 @@ data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
 # =============================
-# FUNCION AVANCE
+# FUNCIONES
 # =============================
 def calcular_avance(estado):
     mapa = {
@@ -51,15 +51,11 @@ def calcular_avance(estado):
     }
     return mapa.get(estado, 0)
 
-# =============================
-# ACTUALIZAR ESTADO
-# =============================
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
 
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
-            # +2 porque gspread cuenta encabezado
             sheet.update_cell(i + 2, 4, nuevo_estado)
             break
 
@@ -77,8 +73,7 @@ with st.form("form_tarea"):
 
     if submit:
         nuevo_id = f"OPE{len(df)+1:05d}"
-        nueva_fila = [nuevo_id, tarea, responsable, estado]
-        sheet.append_row(nueva_fila)
+        sheet.append_row([nuevo_id, tarea, responsable, estado])
         st.success("✅ Tarea creada")
         st.rerun()
 
@@ -92,58 +87,76 @@ if not df.empty:
     df["% avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
-# KANBAN INTERACTIVO
+# SELECTOR DE VISTA
 # =============================
-st.subheader("📌 Tablero Kanban")
-
-cols = st.columns(len(estados))
-
-for i, estado in enumerate(estados):
-    with cols[i]:
-        st.markdown(f"### {estado}")
-
-        tareas_estado = df[df["estado"] == estado]
-
-        if tareas_estado.empty:
-            st.write("—")
-        else:
-            for _, row in tareas_estado.iterrows():
-                st.markdown(
-                    f"""
-                    <div style='
-                        background-color:#f0f2f6;
-                        padding:10px;
-                        margin-bottom:10px;
-                        border-radius:10px;
-                        border-left:5px solid #4CAF50;
-                    '>
-                        <b>{row['id']}</b><br>
-                        {row['tarea']}<br>
-                        👤 {row['responsable']}<br>
-                        📊 {row['% avance']}%
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
-                col_btn1, col_btn2 = st.columns(2)
-
-                # BOTÓN RETROCEDER
-                if i > 0:
-                    if col_btn1.button("⬅️", key=f"back_{row['id']}"):
-                        nuevo_estado = estados[i - 1]
-                        actualizar_estado(row["id"], nuevo_estado)
-                        st.rerun()
-
-                # BOTÓN AVANZAR
-                if i < len(estados) - 1:
-                    if col_btn2.button("➡️", key=f"next_{row['id']}"):
-                        nuevo_estado = estados[i + 1]
-                        actualizar_estado(row["id"], nuevo_estado)
-                        st.rerun()
+vista = st.radio(
+    "Selecciona vista",
+    ["📋 Lista", "📌 Kanban"],
+    horizontal=True
+)
 
 # =============================
-# TABLA
+# VISTA LISTA (PRO)
 # =============================
-st.subheader("📋 Vista Tabla")
-st.dataframe(df, use_container_width=True)
+if vista == "📋 Lista":
+
+    st.subheader("📋 Vista Lista")
+
+    if not df.empty:
+        df_view = df.copy()
+
+        # orden columnas
+        columnas = ["id", "tarea", "responsable", "estado", "% avance"]
+        df_view = df_view[columnas]
+
+        st.dataframe(df_view, use_container_width=True)
+
+# =============================
+# VISTA KANBAN
+# =============================
+else:
+
+    st.subheader("📌 Tablero Kanban")
+
+    cols = st.columns(len(estados))
+
+    for i, estado in enumerate(estados):
+        with cols[i]:
+            st.markdown(f"### {estado}")
+
+            tareas_estado = df[df["estado"] == estado]
+
+            if tareas_estado.empty:
+                st.write("—")
+            else:
+                for _, row in tareas_estado.iterrows():
+
+                    st.markdown(
+                        f"""
+                        <div style='
+                            background-color:#f0f2f6;
+                            padding:10px;
+                            margin-bottom:10px;
+                            border-radius:10px;
+                            border-left:5px solid #4CAF50;
+                        '>
+                            <b>{row['id']}</b><br>
+                            {row['tarea']}<br>
+                            👤 {row['responsable']}<br>
+                            📊 {row['% avance']}%
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                    col1, col2 = st.columns(2)
+
+                    if i > 0:
+                        if col1.button("⬅️", key=f"b_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i - 1])
+                            st.rerun()
+
+                    if i < len(estados) - 1:
+                        if col2.button("➡️", key=f"n_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i + 1])
+                            st.rerun()
