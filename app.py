@@ -181,43 +181,44 @@ if vista == "📌 Kanban":
 
                 cont = st.container()
 
-               with cont:
+                # ✅ TODO debe ir dentro de cont
+                with cont:
 
-    st.markdown(f"""
-    <div class="card-kanban">
-        <b>{row['id']} | {row['tarea']}</b><br><br>
-        👤 {row['responsable']}<br>
-        ⭐ {row['prioridad']}<br>
-        📅 {row['fecha_compromiso']}<br>
-        📊 {row['avance']}%
-    </div>
-    """, unsafe_allow_html=True)
+                    st.markdown(f"""
+                    <div class="card-kanban">
+                        <b>{row['id']} | {row['tarea']}</b><br><br>
+                        👤 {row['responsable']}<br>
+                        ⭐ {row['prioridad']}<br>
+                        📅 {row['fecha_compromiso']}<br>
+                        📊 {row['avance']}%
+                    </div>
+                    """, unsafe_allow_html=True)
 
-    # 🔥 BOTONES PEQUEÑOS DE MOVIMIENTO
-    colA, colB, colC = st.columns([1,2,1])
+                    # 🔥 BOTONES
+                    colA, colB, colC = st.columns([1,2,1])
 
-    # ⬅️ ATRÁS
-    if i > 0:
-        if colA.button("⬅️", key=f"back_{row['id']}"):
-            actualizar_estado(row["id"], estados[i-1])
-            st.rerun()
+                    # ⬅️ ATRÁS
+                    if i > 0:
+                        if colA.button("⬅️", key=f"back_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i-1])
+                            st.rerun()
 
-    # ➡️ ADELANTE
-    if i < len(estados) - 1:
-        if colC.button("➡️", key=f"next_{row['id']}"):
-            actualizar_estado(row["id"], estados[i+1])
-            st.rerun()
+                    # ➡️ ADELANTE
+                    if i < len(estados) - 1:
+                        if colC.button("➡️", key=f"next_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i+1])
+                            st.rerun()
 
-    # 👉 CLICK EN TARJETA (DETALLE)
-    if st.button(" ", key=f"k{row['id']}", use_container_width=True):
-        st.session_state["tarea_sel"] = row["id"]
-        st.session_state["modal_open"] = True
+                    # 👉 CLICK TARJETA
+                    if st.button(" ", key=f"k{row['id']}", use_container_width=True):
+                        st.session_state["tarea_sel"] = row["id"]
+                        st.session_state["modal_open"] = True
 
-    # BARRA COLOR
-    st.markdown(
-        f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
-        unsafe_allow_html=True
-    )
+                    # BARRA COLOR
+                    st.markdown(
+                        f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
+                        unsafe_allow_html=True
+                    )
 # =============================
 # LISTA
 # =============================
