@@ -232,24 +232,25 @@ else:
 
     gb = GridOptionsBuilder.from_dataframe(df)
 
-gb.configure_selection(
-    selection_mode="single",
-    use_checkbox=False
-)
+    gb.configure_selection(
+        selection_mode="single",
+        use_checkbox=False
+    )
 
-gb.configure_grid_options(
-    getRowStyle="""
-    function(params) {
-        if (params.node.isSelected()) {
-            return {
-                background: '#cfe2ff',
-                color: 'black',
-                fontWeight: 'bold'
-            };
+    gb.configure_grid_options(
+        getRowStyle="""
+        function(params) {
+            if (params.node.isSelected()) {
+                return {
+                    background: '#cfe2ff',
+                    color: 'black',
+                    fontWeight: 'bold'
+                };
+            }
         }
-    }
-    """
-)   
+        """
+    )
+
     grid_options = gb.build()
 
     grid_response = AgGrid(
@@ -264,6 +265,7 @@ gb.configure_grid_options(
     if selected is not None and len(selected) > 0:
         fila = selected.iloc[0]
         st.session_state["tarea_sel"] = fila["id"]
+        
 # =============================
 # PANEL DETALLE (EDITABLE)
 # =============================
