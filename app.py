@@ -211,17 +211,28 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 👉 TARJETA (BOTÓN)
-                if st.button(
-                    f"{row['id']} | {row['tarea']}\n\n"
-                    f"👤 {row['responsable']}\n"
-                    f"⭐ {row['prioridad']}\n"
-                    f"📅 {row['fecha_compromiso']}\n"
-                    f"📊 {row['avance']}%",
-                    key=f"k{row['id']}",
-                    use_container_width=True
-                ):
-                    st.session_state["tarea_sel"] = row["id"]
+                # 👉 TARJETA REAL (HTML)
+card_html = f"""
+<div style="
+    background-color:#e9ecef;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:10px;
+    color:black;
+">
+    <b>{row['id']} | {row['tarea']}</b><br><br>
+    👤 {row['responsable']}<br>
+    ⭐ {row['prioridad']}<br>
+    📅 {row['fecha_compromiso']}<br>
+    📊 {row['avance']}%
+</div>
+"""
+
+clicked = st.markdown(card_html, unsafe_allow_html=True)
+
+# 👉 CLICK SIMULADO (botón invisible)
+if st.button("Seleccionar", key=f"k{row['id']}"):
+    st.session_state["tarea_sel"] = row["id"]
 
                 # 👉 BARRA DE COLOR POR PRIORIDAD
                 st.markdown(
