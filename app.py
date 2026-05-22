@@ -236,21 +236,7 @@ else:
         selection_mode="single",
         use_checkbox=False
     )
-
-    gb.configure_grid_options(
-        getRowStyle="""
-        function(params) {
-            if (params.node.isSelected()) {
-                return {
-                    background: '#cfe2ff',
-                    color: 'black',
-                    fontWeight: 'bold'
-                };
-            }
-        }
-        """
-    )
-
+   
     grid_options = gb.build()
 
     grid_response = AgGrid(
