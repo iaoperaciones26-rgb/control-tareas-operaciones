@@ -123,6 +123,23 @@ def actualizar_estado(id_tarea, nuevo_estado):
     st.cache_data.clear()
 
 # =============================
+# HEADER
+# =============================
+col1,col2 = st.columns([1,2])
+
+with col1:
+    if st.button("➕ Nueva tarea"):
+        st.session_state["form"] = True
+
+with col2:
+    vista = st.radio("",["📋 Lista","📌 Kanban"],horizontal=True)
+
+# =============================
+# FILTRO GLOBAL
+# =============================
+filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
+
+# =============================
 # DATA
 # =============================
 df = cargar_datos()
@@ -138,22 +155,6 @@ if filtro:
         df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
         df["responsable"].str.lower().str.contains(filtro_lower, na=False)
     ]
-# =============================
-# HEADER
-# =============================
-col1,col2 = st.columns([1,2])
-
-with col1:
-    if st.button("➕ Nueva tarea"):
-        st.session_state["form"] = True
-
-with col2:
-    vista = st.radio("",["📋 Lista","📌 Kanban"],horizontal=True)
-    
-# =============================
-# FILTRO GLOBAL
-# =============================
-filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
 
 # =============================
 # FORMULARIO
