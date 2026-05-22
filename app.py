@@ -160,6 +160,28 @@ if not df.empty:
     df["% avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
+# KPI
+# =============================
+st.subheader("📊 Resumen general")
+
+total = len(df)
+en_proceso = len(df[df["estado"] == "EN PROCESO"])
+finalizadas = len(df[df["estado"] == "FINALIZADO"])
+
+# vencidas
+hoy = pd.to_datetime(datetime.now().date())
+df["fecha_compromiso_dt"] = pd.to_datetime(df["fecha_compromiso"], errors="coerce")
+
+vencidas = len(df[(df["fecha_compromiso_dt"] < hoy) & (df["estado"] != "FINALIZADO")])
+
+k1, k2, k3, k4 = st.columns(4)
+
+k1.metric("Total tareas", total)
+k2.metric("En proceso", en_proceso)
+k3.metric("Finalizadas", finalizadas)
+k4.metric("Vencidas", vencidas)
+
+# =============================
 # FILTROS
 # =============================
 st.subheader("🔍 Filtros")
@@ -176,17 +198,36 @@ if resp_filtro:
     df = df[df["responsable"].str.contains(resp_filtro, case=False)]
 
 # =============================
+# ALERTA SEMÁFORO
+# =============================
+def semaforo(row):
+    fecha = pd.to_datetime(row["fecha_compromiso"], errors="coerce")
+
+    if pd.isnull(fecha):
+        return "⚪"
+
+    if fecha < hoy and row["estado"] != "FINALIZADO":
+        return "🔴"
+    elif (fecha - hoy).days <= 2:
+        return "🟡"
+    else:
+        return "🟢"
+
+df["alerta"] = df.apply(semaforo, axis=1)
+
+# =============================
 # VISTA LISTA
 # =============================
 if vista == "📋 Lista":
 
     st.subheader("📋 Vista Lista")
 
-    columnas = [
-        "id", "tarea", "responsable",
-        "estado", "prioridad",
-        "fecha_compromiso", "% avance"
-    ]
+columnas = [
+    "alerta",
+    "id", "tarea", "responsable",
+    "estado", "prioridad",
+    "fecha_compromiso", "avance"
+]
 
     st.dataframe(df[columnas], use_container_width=True)
 
@@ -207,8 +248,34 @@ else:
 
             for _, row in tareas_estado.iterrows():
 
-                st.markdown(f"""
-                <div style='background:#f0f2f6;padding:10px;border-radius:10px;margin-bottom:10px'>
+# COLOR POR PRIORIDAD
+color_prioridad = {
+    "Alta": "#ff4d4d",
+    "Media": "#ffc107",
+    "Baja": "#4CAF50"
+}
+
+color = color_prioridad.get(row.get("prioridad", ""), "#cccccc")
+
+# ALERTA VENCIMIENTO
+fecha = pd.to_datetime(row.get("fecha_compromiso"), errors="coerce")
+
+if pd.notnull(fecha):
+    if fecha < hoy and row["estado"] != "FINALIZADO":
+        borde = "3px solid red"
+    else:
+        borde = "1px solid #ddd"
+else:
+    borde = "1px solid #ddd"
+
+st.markdown(f"""
+<div style='background:#ffffff;
+padding:10px;
+border-radius:10px;
+margin-bottom:10px;
+border-left:8px solid {color};
+border:{borde};
+'>
                 <b>{row['id']}</b><br>
                 {row['tarea']}<br>
                 👤 {row['responsable']}<br>
