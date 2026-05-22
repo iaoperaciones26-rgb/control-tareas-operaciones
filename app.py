@@ -64,7 +64,7 @@ def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
 
     for i, fila in enumerate(registros):
-        if fila["ID"] == id_tarea:
+        if fila["id"] == id_tarea:
             sheet.update_cell(i + 2, 4, nuevo_estado)
             registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
             break
@@ -74,10 +74,6 @@ def actualizar_estado(id_tarea, nuevo_estado):
 # =============================
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
-
-# 🔥 LIMPIEZA PRO (CLAVE)
-df.columns = df.columns.str.strip()
-df.columns = df.columns.str.replace(" ", "_")
 
 # =============================
 # HEADER
@@ -95,7 +91,7 @@ if "mostrar_form" not in st.session_state:
     st.session_state["mostrar_form"] = False
 
 # =============================
-# FORMULARIO
+# FORMULARIO PRO
 # =============================
 if st.session_state["mostrar_form"]:
 
@@ -155,16 +151,13 @@ if st.session_state["mostrar_form"]:
             st.rerun()
 
 # =============================
-# RECARGAR DATOS
+# RECARGAR
 # =============================
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
-# 🔥 LIMPIEZA NUEVAMENTE
-df.columns = [str(col).strip().replace(" ", "_") for col in df.columns]
-
 if not df.empty:
-    df["%_avance"] = df["Estado"].apply(calcular_avance)
+    df["% avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
 # FILTROS
@@ -177,10 +170,10 @@ estado_filtro = f1.selectbox("Estado", ["Todos"] + estados)
 resp_filtro = f2.text_input("Responsable")
 
 if estado_filtro != "Todos":
-    df = df[df["Estado"] == estado_filtro]
+    df = df[df["estado"] == estado_filtro]
 
 if resp_filtro:
-    df = df[df["Responsable"].str.contains(resp_filtro, case=False, na=False)]
+    df = df[df["responsable"].str.contains(resp_filtro, case=False)]
 
 # =============================
 # VISTA LISTA
@@ -190,15 +183,12 @@ if vista == "📋 Lista":
     st.subheader("📋 Vista Lista")
 
     columnas = [
-        "ID", "Tarea", "Responsable",
-        "Estado", "Prioridad",
-        "Fecha_Compromiso", "%_avance"
+        "id", "tarea", "responsable",
+        "estado", "prioridad",
+        "fecha_compromiso", "% avance"
     ]
 
-    # SOLO columnas que existan (evita error)
-    columnas_validas = [col for col in columnas if col in df.columns]
-
-    st.dataframe(df[columnas_validas], use_container_width=True)
+    st.dataframe(df[columnas], use_container_width=True)
 
 # =============================
 # VISTA KANBAN
@@ -213,29 +203,29 @@ else:
         with cols[i]:
             st.markdown(f"### {estado}")
 
-            tareas_estado = df[df["Estado"] == estado]
+            tareas_estado = df[df["estado"] == estado]
 
             for _, row in tareas_estado.iterrows():
 
                 st.markdown(f"""
                 <div style='background:#f0f2f6;padding:10px;border-radius:10px;margin-bottom:10px'>
-                <b>{row.get('ID','')}</b><br>
-                {row.get('Tarea','')}<br>
-                👤 {row.get('Responsable','')}<br>
-                ⭐ {row.get('Prioridad','')}<br>
-                📅 {row.get('Fecha_Compromiso','')}<br>
-                📊 {row.get('%_avance','')}%
+                <b>{row['id']}</b><br>
+                {row['tarea']}<br>
+                👤 {row['responsable']}<br>
+                ⭐ {row['prioridad']}<br>
+                📅 {row['fecha_compromiso']}<br>
+                📊 {row['% avance']}%
                 </div>
                 """, unsafe_allow_html=True)
 
                 c1, c2 = st.columns(2)
 
                 if i > 0:
-                    if c1.button("⬅️", key=f"b_{row['ID']}"):
-                        actualizar_estado(row["ID"], estados[i - 1])
+                    if c1.button("⬅️", key=f"b_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i - 1])
                         st.rerun()
 
                 if i < len(estados) - 1:
-                    if c2.button("➡️", key=f"n_{row['ID']}"):
-                        actualizar_estado(row["ID"], estados[i + 1])
+                    if c2.button("➡️", key=f"n_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i + 1])
                         st.rerun()
