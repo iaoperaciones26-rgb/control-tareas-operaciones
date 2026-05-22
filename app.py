@@ -58,6 +58,7 @@ def conectar():
 spreadsheet = conectar()
 sheet = spreadsheet.worksheet("tareas")
 
+# BITÁCORA
 try:
     log_sheet = spreadsheet.worksheet("bitacora")
 except:
@@ -84,7 +85,7 @@ estados = [
 ]
 
 # =============================
-# SESSION
+# SESSION STATE
 # =============================
 if "form" not in st.session_state:
     st.session_state["form"] = False
@@ -226,7 +227,7 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# DETALLE (SIMULA MODAL)
+# DETALLE (SIMULADO MODAL)
 # =============================
 if st.session_state["modal_open"]:
 
