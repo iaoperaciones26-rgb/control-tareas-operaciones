@@ -79,7 +79,6 @@ def registrar_bitacora(id_tarea, accion):
 
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
-
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
             sheet.update_cell(i + 2, 4, nuevo_estado)
@@ -118,7 +117,7 @@ if st.session_state["mostrar_form"]:
 
         tarea = st.text_input("Nombre de tarea")
 
-        responsable = st.selectbox("Responsable", responsables_lista)
+        responsables = st.multiselect("Responsables", responsables_lista)
 
         prioridad = st.selectbox("Prioridad", ["Alta", "Media", "Baja"])
 
@@ -148,7 +147,7 @@ if st.session_state["mostrar_form"]:
             sheet.append_row([
                 nuevo_id,
                 tarea,
-                responsable,
+                ", ".join(responsables),
                 estado,
                 prioridad,
                 datetime.now().strftime("%Y-%m-%d"),
@@ -169,7 +168,7 @@ if st.session_state["mostrar_form"]:
             st.rerun()
 
 # =============================
-# RECARGAR DATOS
+# RECARGAR
 # =============================
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
@@ -215,7 +214,7 @@ if resp_filtro:
     df = df[df["responsable"].str.contains(resp_filtro, case=False, na=False)]
 
 # =============================
-# ALERTA SEMÁFORO
+# ALERTA
 # =============================
 def semaforo(row):
     fecha = pd.to_datetime(row["fecha_compromiso"], errors="coerce")
@@ -284,12 +283,15 @@ else:
                     borde = "1px solid #ddd"
 
                 st.markdown(f"""
-                <div style='background:#ffffff;
-                padding:10px;
-                border-radius:10px;
-                margin-bottom:10px;
+                <div style='
+                background:#e9ecef;
+                padding:12px;
+                border-radius:12px;
+                margin-bottom:12px;
                 border-left:8px solid {color};
                 border:{borde};
+                color:#000;
+                box-shadow:0px 2px 6px rgba(0,0,0,0.1);
                 '>
                 <b>{row['id']}</b><br>
                 {row['tarea']}<br>
