@@ -193,39 +193,37 @@ k4.metric("Vencidas",len(df[(df["fecha_dt"]<hoy)&(df["estado"]!="FINALIZADO")]))
 # =============================
 # KANBAN
 # =============================
-if vista=="📌 Kanban":
+if vista == "📌 Kanban":
 
     cols = st.columns(len(estados))
 
-    for i,estado in enumerate(estados):
+    for i, estado in enumerate(estados):
         with cols[i]:
             st.markdown(f"### {estado}")
 
-            tareas = df[df["estado"]==estado]
+            tareas = df[df["estado"] == estado]
 
-            for _,row in tareas.iterrows():
+            for _, row in tareas.iterrows():
 
                 color = {
-                    "Alta":"#ff4d4d",
-                    "Media":"#ffc107",
-                    "Baja":"#4CAF50"
-                }.get(row["prioridad"],"#ccc")
+                    "Alta": "#ff4d4d",
+                    "Media": "#ffc107",
+                    "Baja": "#4CAF50"
+                }.get(row["prioridad"], "#ccc")
 
+                # 👉 TARJETA (BOTÓN)
                 if st.button(
-    f"{row['id']} | {row['tarea']}\n\n"
-    f"👤 {row['responsable']}\n"
-    f"⭐ {row['prioridad']}\n"
-    f"📅 {row['fecha_compromiso']}\n"
-    f"📊 {row['avance']}%",
-    key=f"k{row['id']}",
-    use_container_width=True
-):
-    st.session_state["tarea_sel"] = row["id"],
+                    f"{row['id']} | {row['tarea']}\n\n"
+                    f"👤 {row['responsable']}\n"
+                    f"⭐ {row['prioridad']}\n"
+                    f"📅 {row['fecha_compromiso']}\n"
+                    f"📊 {row['avance']}%",
                     key=f"k{row['id']}",
                     use_container_width=True
                 ):
                     st.session_state["tarea_sel"] = row["id"]
 
+                # 👉 BARRA DE COLOR POR PRIORIDAD
                 st.markdown(
                     f"<div style='height:6px;background:{color};margin-top:-10px;margin-bottom:10px;border-radius:5px'></div>",
                     unsafe_allow_html=True
