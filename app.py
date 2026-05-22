@@ -64,7 +64,7 @@ def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
 
     for i, fila in enumerate(registros):
-        if fila["id"] == id_tarea:
+        if fila["ID"] == id_tarea:
             sheet.update_cell(i + 2, 4, nuevo_estado)
             registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
             break
@@ -91,7 +91,7 @@ if "mostrar_form" not in st.session_state:
     st.session_state["mostrar_form"] = False
 
 # =============================
-# FORMULARIO PRO
+# FORMULARIO
 # =============================
 if st.session_state["mostrar_form"]:
 
@@ -151,13 +151,13 @@ if st.session_state["mostrar_form"]:
             st.rerun()
 
 # =============================
-# RECARGAR
+# RECARGAR DATOS
 # =============================
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
 if not df.empty:
-    df["% avance"] = df["estado"].apply(calcular_avance)
+    df["% avance"] = df["Estado"].apply(calcular_avance)
 
 # =============================
 # FILTROS
@@ -170,10 +170,10 @@ estado_filtro = f1.selectbox("Estado", ["Todos"] + estados)
 resp_filtro = f2.text_input("Responsable")
 
 if estado_filtro != "Todos":
-    df = df[df["estado"] == estado_filtro]
+    df = df[df["Estado"] == estado_filtro]
 
 if resp_filtro:
-    df = df[df["responsable"].str.contains(resp_filtro, case=False)]
+    df = df[df["Responsable"].str.contains(resp_filtro, case=False)]
 
 # =============================
 # VISTA LISTA
@@ -183,9 +183,9 @@ if vista == "📋 Lista":
     st.subheader("📋 Vista Lista")
 
     columnas = [
-        "id", "tarea", "responsable",
-        "estado", "prioridad",
-        "fecha_compromiso", "% avance"
+        "ID", "Tarea", "Responsable",
+        "Estado", "Prioridad",
+        "Fecha_Compromiso", "% avance"
     ]
 
     st.dataframe(df[columnas], use_container_width=True)
@@ -203,17 +203,17 @@ else:
         with cols[i]:
             st.markdown(f"### {estado}")
 
-            tareas_estado = df[df["estado"] == estado]
+            tareas_estado = df[df["Estado"] == estado]
 
             for _, row in tareas_estado.iterrows():
 
                 st.markdown(f"""
                 <div style='background:#f0f2f6;padding:10px;border-radius:10px;margin-bottom:10px'>
-                <b>{row['id']}</b><br>
-                {row['tarea']}<br>
-                👤 {row['responsable']}<br>
-                ⭐ {row['prioridad']}<br>
-                📅 {row['fecha_compromiso']}<br>
+                <b>{row['ID']}</b><br>
+                {row['Tarea']}<br>
+                👤 {row['Responsable']}<br>
+                ⭐ {row['Prioridad']}<br>
+                📅 {row['Fecha_Compromiso']}<br>
                 📊 {row['% avance']}%
                 </div>
                 """, unsafe_allow_html=True)
@@ -221,11 +221,11 @@ else:
                 c1, c2 = st.columns(2)
 
                 if i > 0:
-                    if c1.button("⬅️", key=f"b_{row['id']}"):
-                        actualizar_estado(row["id"], estados[i - 1])
+                    if c1.button("⬅️", key=f"b_{row['ID']}"):
+                        actualizar_estado(row["ID"], estados[i - 1])
                         st.rerun()
 
                 if i < len(estados) - 1:
-                    if c2.button("➡️", key=f"n_{row['id']}"):
-                        actualizar_estado(row["id"], estados[i + 1])
+                    if c2.button("➡️", key=f"n_{row['ID']}"):
+                        actualizar_estado(row["ID"], estados[i + 1])
                         st.rerun()
