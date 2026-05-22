@@ -219,7 +219,7 @@ if vista=="📌 Kanban":
 ⭐ {row['prioridad']}
 📅 {row['fecha_compromiso']}
 📊 {row['avance']}%
-"""
+""",
                     key=f"k{row['id']}",
                     use_container_width=True
                 ):
