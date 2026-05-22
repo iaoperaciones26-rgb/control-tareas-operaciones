@@ -75,8 +75,13 @@ def actualizar_estado(id_tarea, nuevo_estado):
 # =============================
 # DATA
 # =============================
-data = sheet.get_all_records()
-df = pd.DataFrame(data)
+df = pd.DataFrame(sheet.get_all_records())
+
+# =============================
+# SESSION STATE HISTORIAL
+# =============================
+if "hist_id" not in st.session_state:
+    st.session_state["hist_id"] = None
 
 # =============================
 # HEADER
@@ -98,8 +103,6 @@ if "form" not in st.session_state:
 # =============================
 if st.session_state["form"]:
 
-    st.subheader("Nueva tarea")
-
     with st.form("form"):
 
         tarea = st.text_input("Tarea")
@@ -116,10 +119,8 @@ if st.session_state["form"]:
         e3 = st.selectbox("Estado R3",["Pendiente","Validado","Devuelto"])
 
         c1,c2 = st.columns(2)
-        guardar = c1.form_submit_button("Guardar")
-        cancelar = c2.form_submit_button("Cancelar")
 
-        if guardar:
+        if c1.form_submit_button("Guardar"):
             nuevo_id = f"OPE{len(df)+1:05d}"
 
             sheet.append_row([
@@ -137,7 +138,7 @@ if st.session_state["form"]:
             st.session_state["form"]=False
             st.rerun()
 
-        if cancelar:
+        if c2.form_submit_button("Cancelar"):
             st.session_state["form"]=False
             st.rerun()
 
@@ -152,7 +153,7 @@ if not df.empty:
 # =============================
 # KPI
 # =============================
-st.subheader("Resumen")
+st.subheader("📊 Resumen")
 
 hoy = pd.to_datetime(datetime.now().date())
 df["fecha_dt"]=pd.to_datetime(df["fecha_compromiso"],errors="coerce")
@@ -162,19 +163,6 @@ k1.metric("Total",len(df))
 k2.metric("Proceso",len(df[df["estado"]=="EN PROCESO"]))
 k3.metric("Finalizadas",len(df[df["estado"]=="FINALIZADO"]))
 k4.metric("Vencidas",len(df[(df["fecha_dt"]<hoy)&(df["estado"]!="FINALIZADO")]))
-
-# =============================
-# FILTROS
-# =============================
-f1,f2 = st.columns(2)
-estado_f = f1.selectbox("Estado",["Todos"]+estados)
-resp_f = f2.text_input("Responsable")
-
-if estado_f!="Todos":
-    df=df[df["estado"]==estado_f]
-
-if resp_f:
-    df=df[df["responsable"].str.contains(resp_f,case=False,na=False)]
 
 # =============================
 # ALERTA
@@ -189,7 +177,7 @@ def semaforo(row):
 df["alerta"]=df.apply(semaforo,axis=1)
 
 # =============================
-# LISTA
+# VISTA LISTA
 # =============================
 if vista=="📋 Lista":
 
@@ -199,7 +187,7 @@ if vista=="📋 Lista":
     ]],use_container_width=True)
 
 # =============================
-# KANBAN
+# VISTA KANBAN
 # =============================
 else:
 
@@ -216,22 +204,19 @@ else:
                 color={"Alta":"#ff4d4d","Media":"#ffc107","Baja":"#4CAF50"}
                 c=color.get(row["prioridad"],"#ccc")
 
-                fecha=pd.to_datetime(row["fecha_compromiso"],errors="coerce")
-                borde="3px solid red" if pd.notnull(fecha) and fecha<hoy and row["estado"]!="FINALIZADO" else "1px solid #ddd"
-
                 obs=st.text_input(f"Obs {row['id']}",key=f"obs{row['id']}")
 
                 st.markdown(f"""
                 <div style='background:#e9ecef;padding:10px;border-radius:10px;
-                border-left:8px solid {c};border:{borde};color:black'>
+                border-left:8px solid {c};color:black'>
                 <b>{row['id']}</b><br>
                 {row['tarea']}<br>
-                👤 {row['responsable']}<br>
-                ⭐ {row['prioridad']}<br>
-                📅 {row['fecha_compromiso']}<br>
-                📊 {row['avance']}%
+                👤 {row['responsable']}
                 </div>
                 """,unsafe_allow_html=True)
+
+                if st.button("📜 Ver historial",key=f"h{row['id']}"):
+                    st.session_state["hist_id"]=row["id"]
 
                 c1,c2=st.columns(2)
 
@@ -250,13 +235,21 @@ else:
                         st.rerun()
 
 # =============================
-# HISTORIAL
+# HISTORIAL (SIDEBAR + SELECTOR)
 # =============================
-st.subheader("📜 Historial")
+st.sidebar.subheader("📜 Historial")
 
-id_buscar=st.text_input("ID tarea")
+# Selector
+ids = df["id"].dropna().unique().tolist()
+sel = st.sidebar.selectbox("Seleccionar tarea",ids)
 
-if id_buscar:
-    logs=pd.DataFrame(log_sheet.get_all_records())
-    hist=logs[logs.iloc[:,0]==id_buscar]
-    st.write(hist if not hist.empty else "Sin historial")
+if sel:
+    st.session_state["hist_id"]=sel
+
+# Mostrar historial
+if st.session_state["hist_id"]:
+    logs = pd.DataFrame(log_sheet.get_all_records())
+    hist = logs[logs.iloc[:,0]==st.session_state["hist_id"]]
+
+    st.sidebar.write(f"### {st.session_state['hist_id']}")
+    st.sidebar.write(hist if not hist.empty else "Sin historial")
