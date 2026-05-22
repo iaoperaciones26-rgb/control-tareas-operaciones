@@ -99,23 +99,8 @@ if st.session_state["mostrar_form"]:
 
 with st.form("form_tarea"):
 
-    tarea = st.text_input("Nombre de tarea")
-
-    responsables = [
-        "Herman Jaramillo",
-        "Simon Gabela",
-        "Sandy Perez",
-        "Alexis Cevallos",
-        "Stalin Villalva",
-        "Andres Proaño",
-        "Clara Arteaga",
-        "Javier Ruiz",
-        "Julio Montenegro",
-        "Ivan Rodriguez",
-        "Martha Narvaez"
-    ]
-
-    responsable = st.selectbox("Responsable", responsables)
+        tarea = st.text_input("Nombre de tarea")
+        responsable = st.text_input("Responsable")
         prioridad = st.selectbox("Prioridad", ["Alta", "Media", "Baja"])
         fecha_compromiso = st.date_input("Fecha compromiso")
         estado = st.selectbox("Estado", estados)
