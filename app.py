@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
-# CONEXIÓN
+# CONEXIÓN (ROBUSTA)
 # =============================
 creds_dict = st.secrets["gcp_service_account"]
 
@@ -24,15 +24,16 @@ creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 @st.cache_resource
 def conectar_sheet():
     client = gspread.authorize(creds)
-    return client.open("BD_TAREAS_OPERACIONES").worksheet("tareas")
+    return client.open("BD_TAREAS_OPERACIONES")
 
-sheet = conectar_sheet()
+spreadsheet = conectar_sheet()
+sheet = spreadsheet.worksheet("tareas")
 
 # BITÁCORA
 try:
-    log_sheet = client.open("BD_TAREAS_OPERACIONES").worksheet("bitacora")
+    log_sheet = spreadsheet.worksheet("bitacora")
 except:
-    log_sheet = client.open("BD_TAREAS_OPERACIONES").add_worksheet("bitacora", 100, 10)
+    log_sheet = spreadsheet.add_worksheet("bitacora", 100, 10)
 
 # =============================
 # LISTA RESPONSABLES
@@ -84,10 +85,9 @@ def registrar_bitacora(id_tarea, accion):
 
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
-
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
-            time.sleep(0.5)  # evita saturar API
+            time.sleep(0.5)
             sheet.update_cell(i + 2, 4, nuevo_estado)
             registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
             break
