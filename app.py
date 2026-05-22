@@ -227,27 +227,87 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# DETALLE (SIMULADO MODAL)
+# DETALLE COMPLETO (EDITABLE PRO)
 # =============================
 if st.session_state["modal_open"]:
 
     st.markdown("---")
-    st.subheader("📌 Detalle de tarea")
+    st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
     t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-    tarea_edit = st.text_input("Tarea", t["tarea"])
-    estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
+    col1, col2 = st.columns(2)
 
-    if st.button("💾 Guardar"):
+    with col1:
+        tarea_edit = st.text_input("Tarea", t["tarea"])
+        responsable_edit = st.text_input("Responsables", t["responsable"])
+
+        estado_edit = st.selectbox(
+            "Estado",
+            estados,
+            index=estados.index(t["estado"])
+        )
+
+    with col2:
+        prioridad_edit = st.selectbox(
+            "Prioridad",
+            ["Alta","Media","Baja"],
+            index=["Alta","Media","Baja"].index(t["prioridad"])
+        )
+
+        fecha_edit = st.date_input(
+            "Fecha compromiso",
+            pd.to_datetime(t["fecha_compromiso"], errors="coerce")
+        )
+
+    # =============================
+    # BOTONES
+    # =============================
+    col_btn1, col_btn2 = st.columns(2)
+
+    if col_btn1.button("💾 Guardar cambios"):
+
         registros = sheet.get_all_records()
+
         for i, fila in enumerate(registros):
             if fila["id"] == t["id"]:
-                sheet.update_cell(i+2,4,estado_edit)
 
-        registrar_bitacora(t["id"], "Edición")
-        st.success("Guardado")
+                sheet.update(f"A{i+2}:G{i+2}", [[
+                    t["id"],
+                    tarea_edit,
+                    responsable_edit,
+                    estado_edit,
+                    prioridad_edit,
+                    t["fecha_creacion"],
+                    str(fecha_edit)
+                ]])
+
+                registrar_bitacora(t["id"], f"Cambio estado a {estado_edit}")
+                st.success("Cambios guardados")
+                st.cache_data.clear()
+                st.rerun()
+
+    if col_btn2.button("❌ Cerrar"):
+        st.session_state["modal_open"] = False
+
+    # =============================
+    # OBSERVACIONES
+    # =============================
+    st.markdown("### 📝 Observaciones")
+
+    obs = st.text_input("Nueva observación")
+
+    if st.button("Guardar observación"):
+        registrar_bitacora(t["id"], obs)
+        st.success("Observación guardada")
         st.rerun()
 
-    if st.button("Cerrar"):
-        st.session_state["modal_open"] = False
+    # =============================
+    # HISTORIAL
+    # =============================
+    st.markdown("### 📜 Historial")
+
+    logs = pd.DataFrame(log_sheet.get_all_records())
+    hist = logs[logs.iloc[:,0] == t["id"]]
+
+    st.dataframe(hist if not hist.empty else pd.DataFrame())
