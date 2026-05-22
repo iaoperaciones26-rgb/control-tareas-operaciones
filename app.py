@@ -237,28 +237,32 @@ if vista=="📌 Kanban":
 # =============================
 # LISTA
 # =============================
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+
 else:
 
     st.subheader("📋 Lista de tareas")
 
-    # selector tipo tabla
-    opciones = df["id"] + " | " + df["tarea"]
+    gb = GridOptionsBuilder.from_dataframe(df)
 
-    seleccion = st.selectbox("Seleccionar tarea", opciones)
-
-    if seleccion:
-        id_sel = seleccion.split(" | ")[0]
-        st.session_state["tarea_sel"] = id_sel
-
-    # tabla visual
-    st.dataframe(
-        df[[
-            "id","tarea","responsable","estado",
-            "prioridad","fecha_compromiso","avance"
-        ]],
-        use_container_width=True
+    gb.configure_selection(
+        selection_mode="single",
+        use_checkbox=False
     )
 
+    grid_options = gb.build()
+
+    grid_response = AgGrid(
+        df,
+        gridOptions=grid_options,
+        update_mode=GridUpdateMode.SELECTION_CHANGED,
+        fit_columns_on_grid_load=True
+    )
+
+    selected = grid_response["selected_rows"]
+
+    if selected:
+        st.session_state["tarea_sel"] = selected[0]["id"]
 # =============================
 # PANEL DETALLE
 # =============================
