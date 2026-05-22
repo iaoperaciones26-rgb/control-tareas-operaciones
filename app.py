@@ -10,6 +10,27 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
+# ESTILO TARJETAS (CLAVE)
+# =============================
+st.markdown("""
+<style>
+div.stButton > button {
+    background-color: #e9ecef;
+    color: black;
+    border-radius: 12px;
+    padding: 15px;
+    text-align: left;
+    font-size: 14px;
+    border: none;
+    margin-bottom: 10px;
+}
+div.stButton > button:hover {
+    background-color: #dfe3e6;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =============================
 # CONEXIÓN
 # =============================
 creds_dict = st.secrets["gcp_service_account"]
@@ -77,7 +98,7 @@ def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
-            time.sleep(0.5)
+            time.sleep(0.3)
             sheet.update_cell(i+2,4,nuevo_estado)
             break
 
@@ -165,35 +186,9 @@ k3.metric("Finalizadas",len(df[df["estado"]=="FINALIZADO"]))
 k4.metric("Vencidas",len(df[(df["fecha_dt"]<hoy)&(df["estado"]!="FINALIZADO")]))
 
 # =============================
-# ALERTA
-# =============================
-def semaforo(row):
-    f = pd.to_datetime(row["fecha_compromiso"],errors="coerce")
-    if pd.isnull(f): return "⚪"
-    if f<hoy and row["estado"]!="FINALIZADO": return "🔴"
-    if (f-hoy).days<=2: return "🟡"
-    return "🟢"
-
-df["alerta"] = df.apply(semaforo,axis=1)
-
-# =============================
-# LISTA
-# =============================
-if vista=="📋 Lista":
-
-    for _, row in df.iterrows():
-        if st.button(f"{row['id']} - {row['tarea']}", key=f"l{row['id']}"):
-            st.session_state["tarea_sel"] = row["id"]
-
-    st.dataframe(df[[
-        "alerta","id","tarea","responsable",
-        "estado","prioridad","fecha_compromiso","avance"
-    ]],use_container_width=True)
-
-# =============================
 # KANBAN
 # =============================
-else:
+if vista=="📌 Kanban":
 
     cols = st.columns(len(estados))
 
@@ -205,18 +200,20 @@ else:
 
             for _,row in tareas.iterrows():
 
-                color={"Alta":"#ff4d4d","Media":"#ffc107","Baja":"#4CAF50"}
-                c=color.get(row["prioridad"],"#ccc")
+                color = {
+                    "Alta":"#ff4d4d",
+                    "Media":"#ffc107",
+                    "Baja":"#4CAF50"
+                }.get(row["prioridad"],"#ccc")
 
-                if st.button(f"{row['id']} - {row['tarea']}", key=f"k{row['id']}"):
+                if st.button(
+                    f"{row['id']}  |  {row['tarea']}\n👤 {row['responsable']}\n⭐ {row['prioridad']}  📅 {row['fecha_compromiso']}  📊 {row['avance']}%",
+                    key=f"k{row['id']}",
+                    use_container_width=True
+                ):
                     st.session_state["tarea_sel"] = row["id"]
 
-                st.markdown(f"""
-                <div style='background:#e9ecef;padding:10px;border-radius:10px;
-                border-left:8px solid {c};color:black;margin-bottom:10px'>
-                👤 {row['responsable']}
-                </div>
-                """,unsafe_allow_html=True)
+                st.markdown(f"<div style='height:6px;background:{color};margin-top:-10px;margin-bottom:10px;border-radius:5px'></div>", unsafe_allow_html=True)
 
                 c1,c2 = st.columns(2)
 
@@ -231,6 +228,16 @@ else:
                         st.rerun()
 
 # =============================
+# LISTA
+# =============================
+else:
+    for _,row in df.iterrows():
+        if st.button(f"{row['id']} - {row['tarea']}", key=f"l{row['id']}"):
+            st.session_state["tarea_sel"] = row["id"]
+
+    st.dataframe(df)
+
+# =============================
 # PANEL DETALLE
 # =============================
 if st.session_state["tarea_sel"]:
@@ -238,37 +245,34 @@ if st.session_state["tarea_sel"]:
     st.markdown("---")
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
-    tarea_df = df[df["id"] == st.session_state["tarea_sel"]]
+    t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-    if not tarea_df.empty:
-        t = tarea_df.iloc[0]
+    col1, col2 = st.columns(2)
 
-        col1, col2 = st.columns(2)
+    with col1:
+        st.write(f"**Tarea:** {t['tarea']}")
+        st.write(f"**Responsables:** {t['responsable']}")
+        st.write(f"**Estado:** {t['estado']}")
+        st.write(f"**Prioridad:** {t['prioridad']}")
+        st.write(f"**Fecha:** {t['fecha_compromiso']}")
 
-        with col1:
-            st.write(f"**Tarea:** {t['tarea']}")
-            st.write(f"**Responsables:** {t['responsable']}")
-            st.write(f"**Estado:** {t['estado']}")
-            st.write(f"**Prioridad:** {t['prioridad']}")
-            st.write(f"**Fecha:** {t['fecha_compromiso']}")
+    with col2:
+        st.write(f"R1: {t['revisor_1']} ({t['estado_r1']})")
+        st.write(f"R2: {t['revisor_2']} ({t['estado_r2']})")
+        st.write(f"R3: {t['revisor_3']} ({t['estado_r3']})")
 
-        with col2:
-            st.write(f"R1: {t['revisor_1']} ({t['estado_r1']})")
-            st.write(f"R2: {t['revisor_2']} ({t['estado_r2']})")
-            st.write(f"R3: {t['revisor_3']} ({t['estado_r3']})")
+    st.markdown("### 📝 Observación")
 
-        st.markdown("### 📝 Observación")
+    obs = st.text_input("Nueva observación")
 
-        obs = st.text_input("Nueva observación")
+    if st.button("Guardar observación"):
+        registrar_bitacora(t["id"], obs)
+        st.success("Guardado")
+        st.rerun()
 
-        if st.button("Guardar"):
-            registrar_bitacora(t["id"], obs)
-            st.success("Guardado")
-            st.rerun()
+    st.markdown("### 📜 Historial")
 
-        st.markdown("### 📜 Historial")
+    logs = pd.DataFrame(log_sheet.get_all_records())
+    hist = logs[logs.iloc[:,0] == t["id"]]
 
-        logs = pd.DataFrame(log_sheet.get_all_records())
-        hist = logs[logs.iloc[:,0] == t["id"]]
-
-        st.dataframe(hist if not hist.empty else pd.DataFrame())
+    st.dataframe(hist if not hist.empty else pd.DataFrame())
