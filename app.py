@@ -222,12 +222,12 @@ if vista == "📋 Lista":
 
     st.subheader("📋 Vista Lista")
 
-columnas = [
-    "alerta",
-    "id", "tarea", "responsable",
-    "estado", "prioridad",
-    "fecha_compromiso", "avance"
-]
+    columnas = [
+        "alerta",
+        "id", "tarea", "responsable",
+        "estado", "prioridad",
+        "fecha_compromiso", "avance"
+    ]
 
     st.dataframe(df[columnas], use_container_width=True)
 
