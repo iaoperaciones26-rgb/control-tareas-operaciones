@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
-# ESTILO TARJETAS (CLAVE)
+# ESTILO TARJETAS
 # =============================
 st.markdown("""
 <style>
@@ -57,6 +57,13 @@ except:
     log_sheet = spreadsheet.add_worksheet("bitacora", 100, 10)
 
 # =============================
+# CACHE DATOS (CLAVE)
+# =============================
+@st.cache_data(ttl=5)
+def cargar_datos():
+    return pd.DataFrame(sheet.get_all_records())
+
+# =============================
 # LISTAS
 # =============================
 responsables_lista = [
@@ -93,6 +100,7 @@ def registrar_bitacora(id_tarea, accion):
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         accion
     ])
+    st.cache_data.clear()
 
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
@@ -101,11 +109,15 @@ def actualizar_estado(id_tarea, nuevo_estado):
             time.sleep(0.3)
             sheet.update_cell(i+2,4,nuevo_estado)
             break
+    st.cache_data.clear()
 
 # =============================
 # DATA
 # =============================
-df = pd.DataFrame(sheet.get_all_records())
+df = cargar_datos()
+
+if not df.empty:
+    df["avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
 # HEADER
@@ -164,14 +176,6 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# RECARGA
-# =============================
-df = pd.DataFrame(sheet.get_all_records())
-
-if not df.empty:
-    df["avance"] = df["estado"].apply(calcular_avance)
-
-# =============================
 # KPI
 # =============================
 st.subheader("📊 Resumen")
@@ -213,7 +217,10 @@ if vista=="📌 Kanban":
                 ):
                     st.session_state["tarea_sel"] = row["id"]
 
-                st.markdown(f"<div style='height:6px;background:{color};margin-top:-10px;margin-bottom:10px;border-radius:5px'></div>", unsafe_allow_html=True)
+                st.markdown(
+                    f"<div style='height:6px;background:{color};margin-top:-10px;margin-bottom:10px;border-radius:5px'></div>",
+                    unsafe_allow_html=True
+                )
 
                 c1,c2 = st.columns(2)
 
