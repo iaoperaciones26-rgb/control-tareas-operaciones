@@ -130,6 +130,14 @@ df = cargar_datos()
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
+# 👉 APLICAR FILTRO
+if filtro:
+    filtro_lower = filtro.lower()
+
+    df = df[
+        df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
+        df["responsable"].str.lower().str.contains(filtro_lower, na=False)
+    ]
 # =============================
 # HEADER
 # =============================
@@ -141,6 +149,11 @@ with col1:
 
 with col2:
     vista = st.radio("",["📋 Lista","📌 Kanban"],horizontal=True)
+    
+# =============================
+# FILTRO GLOBAL
+# =============================
+filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
 
 # =============================
 # FORMULARIO
