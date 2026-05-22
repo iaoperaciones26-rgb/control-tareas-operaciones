@@ -75,6 +75,10 @@ def actualizar_estado(id_tarea, nuevo_estado):
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
+# 🔥 LIMPIEZA PRO (CLAVE)
+df.columns = df.columns.str.strip()
+df.columns = df.columns.str.replace(" ", "_")
+
 # =============================
 # HEADER
 # =============================
@@ -156,8 +160,12 @@ if st.session_state["mostrar_form"]:
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
+# 🔥 LIMPIEZA NUEVAMENTE
+df.columns = df.columns.str.strip()
+df.columns = df.columns.str.replace(" ", "_")
+
 if not df.empty:
-    df["% avance"] = df["Estado"].apply(calcular_avance)
+    df["%_avance"] = df["Estado"].apply(calcular_avance)
 
 # =============================
 # FILTROS
@@ -173,7 +181,7 @@ if estado_filtro != "Todos":
     df = df[df["Estado"] == estado_filtro]
 
 if resp_filtro:
-    df = df[df["Responsable"].str.contains(resp_filtro, case=False)]
+    df = df[df["Responsable"].str.contains(resp_filtro, case=False, na=False)]
 
 # =============================
 # VISTA LISTA
@@ -185,10 +193,13 @@ if vista == "📋 Lista":
     columnas = [
         "ID", "Tarea", "Responsable",
         "Estado", "Prioridad",
-        "Fecha_Compromiso", "% avance"
+        "Fecha_Compromiso", "%_avance"
     ]
 
-    st.dataframe(df[columnas], use_container_width=True)
+    # SOLO columnas que existan (evita error)
+    columnas_validas = [col for col in columnas if col in df.columns]
+
+    st.dataframe(df[columnas_validas], use_container_width=True)
 
 # =============================
 # VISTA KANBAN
@@ -209,12 +220,12 @@ else:
 
                 st.markdown(f"""
                 <div style='background:#f0f2f6;padding:10px;border-radius:10px;margin-bottom:10px'>
-                <b>{row['ID']}</b><br>
-                {row['Tarea']}<br>
-                👤 {row['Responsable']}<br>
-                ⭐ {row['Prioridad']}<br>
-                📅 {row['Fecha_Compromiso']}<br>
-                📊 {row['% avance']}%
+                <b>{row.get('ID','')}</b><br>
+                {row.get('Tarea','')}<br>
+                👤 {row.get('Responsable','')}<br>
+                ⭐ {row.get('Prioridad','')}<br>
+                📅 {row.get('Fecha_Compromiso','')}<br>
+                📊 {row.get('%_avance','')}%
                 </div>
                 """, unsafe_allow_html=True)
 
