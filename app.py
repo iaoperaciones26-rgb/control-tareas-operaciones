@@ -238,7 +238,26 @@ if vista=="📌 Kanban":
 # LISTA
 # =============================
 else:
-    st.dataframe(df, use_container_width=True)
+
+    st.subheader("📋 Lista de tareas")
+
+    # selector tipo tabla
+    opciones = df["id"] + " | " + df["tarea"]
+
+    seleccion = st.selectbox("Seleccionar tarea", opciones)
+
+    if seleccion:
+        id_sel = seleccion.split(" | ")[0]
+        st.session_state["tarea_sel"] = id_sel
+
+    # tabla visual
+    st.dataframe(
+        df[[
+            "id","tarea","responsable","estado",
+            "prioridad","fecha_compromiso","avance"
+        ]],
+        use_container_width=True
+    )
 
 # =============================
 # PANEL DETALLE
