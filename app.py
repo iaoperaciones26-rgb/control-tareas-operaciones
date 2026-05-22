@@ -157,7 +157,7 @@ data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
 if not df.empty:
-    df["% avance"] = df["estado"].apply(calcular_avance)
+    df["avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
 # KPI
@@ -248,6 +248,54 @@ else:
 
             for _, row in tareas_estado.iterrows():
 
+                # COLOR POR PRIORIDAD
+                color_prioridad = {
+                    "Alta": "#ff4d4d",
+                    "Media": "#ffc107",
+                    "Baja": "#4CAF50"
+                }
+
+                color = color_prioridad.get(row.get("prioridad", ""), "#cccccc")
+
+                # ALERTA VENCIMIENTO
+                fecha = pd.to_datetime(row.get("fecha_compromiso"), errors="coerce")
+
+                if pd.notnull(fecha):
+                    if fecha < hoy and row["estado"] != "FINALIZADO":
+                        borde = "3px solid red"
+                    else:
+                        borde = "1px solid #ddd"
+                else:
+                    borde = "1px solid #ddd"
+
+                st.markdown(f"""
+                <div style='background:#ffffff;
+                padding:10px;
+                border-radius:10px;
+                margin-bottom:10px;
+                border-left:8px solid {color};
+                border:{borde};
+                '>
+                <b>{row['id']}</b><br>
+                {row['tarea']}<br>
+                👤 {row['responsable']}<br>
+                ⭐ {row['prioridad']}<br>
+                📅 {row['fecha_compromiso']}<br>
+                📊 {row['avance']}%
+                </div>
+                """, unsafe_allow_html=True)
+
+                c1, c2 = st.columns(2)
+
+                if i > 0:
+                    if c1.button("⬅️", key=f"b_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i - 1])
+                        st.rerun()
+
+                if i < len(estados) - 1:
+                    if c2.button("➡️", key=f"n_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i + 1])
+                        st.rerun()    
 # COLOR POR PRIORIDAD
 color_prioridad = {
     "Alta": "#ff4d4d",
