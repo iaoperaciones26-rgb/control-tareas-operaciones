@@ -211,32 +211,30 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 👉 TARJETA REAL (HTML)
-card_html = f"""
-<div style="
-    background-color:#e9ecef;
-    padding:15px;
-    border-radius:12px;
-    margin-bottom:10px;
-    color:black;
-">
-    <b>{row['id']} | {row['tarea']}</b><br><br>
-    👤 {row['responsable']}<br>
-    ⭐ {row['prioridad']}<br>
-    📅 {row['fecha_compromiso']}<br>
-    📊 {row['avance']}%
-</div>
-"""
+                # 👉 TARJETA (HTML BONITA)
+                st.markdown(f"""
+                <div style="
+                    background-color:#e9ecef;
+                    padding:15px;
+                    border-radius:12px;
+                    margin-bottom:5px;
+                    color:black;
+                ">
+                    <b>{row['id']} | {row['tarea']}</b><br><br>
+                    👤 {row['responsable']}<br>
+                    ⭐ {row['prioridad']}<br>
+                    📅 {row['fecha_compromiso']}<br>
+                    📊 {row['avance']}%
+                </div>
+                """, unsafe_allow_html=True)
 
-clicked = st.markdown(card_html, unsafe_allow_html=True)
+                # 👉 BOTÓN INVISIBLE (para mantener funcionalidad)
+                if st.button("Abrir", key=f"k{row['id']}"):
+                    st.session_state["tarea_sel"] = row["id"]
 
-# 👉 CLICK SIMULADO (botón invisible)
-if st.button("Seleccionar", key=f"k{row['id']}"):
-    st.session_state["tarea_sel"] = row["id"]
-
-                # 👉 BARRA DE COLOR POR PRIORIDAD
+                # 👉 BARRA DE COLOR
                 st.markdown(
-                    f"<div style='height:6px;background:{color};margin-top:-10px;margin-bottom:10px;border-radius:5px'></div>",
+                    f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
                     unsafe_allow_html=True
                 )
 
