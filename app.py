@@ -226,26 +226,27 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# MODAL DETALLE
+# DETALLE (SIMULA MODAL)
 # =============================
 if st.session_state["modal_open"]:
 
-    with st.modal("Detalle de tarea"):
+    st.markdown("---")
+    st.subheader("📌 Detalle de tarea")
 
-        t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
+    t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-        tarea_edit = st.text_input("Tarea", t["tarea"])
-        estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
+    tarea_edit = st.text_input("Tarea", t["tarea"])
+    estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
 
-        if st.button("💾 Guardar"):
-            registros = sheet.get_all_records()
-            for i, fila in enumerate(registros):
-                if fila["id"] == t["id"]:
-                    sheet.update_cell(i+2,4,estado_edit)
+    if st.button("💾 Guardar"):
+        registros = sheet.get_all_records()
+        for i, fila in enumerate(registros):
+            if fila["id"] == t["id"]:
+                sheet.update_cell(i+2,4,estado_edit)
 
-            registrar_bitacora(t["id"], "Edición")
-            st.success("Guardado")
-            st.rerun()
+        registrar_bitacora(t["id"], "Edición")
+        st.success("Guardado")
+        st.rerun()
 
-        if st.button("Cerrar"):
-            st.session_state["modal_open"] = False
+    if st.button("Cerrar"):
+        st.session_state["modal_open"] = False
