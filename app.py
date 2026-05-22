@@ -3,6 +3,7 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
+import time
 
 st.set_page_config(layout="wide")
 
@@ -19,9 +20,13 @@ scope = [
 ]
 
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
 
-sheet = client.open("BD_TAREAS_OPERACIONES").worksheet("tareas")
+@st.cache_resource
+def conectar_sheet():
+    client = gspread.authorize(creds)
+    return client.open("BD_TAREAS_OPERACIONES").worksheet("tareas")
+
+sheet = conectar_sheet()
 
 # BITÁCORA
 try:
@@ -79,8 +84,10 @@ def registrar_bitacora(id_tarea, accion):
 
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
+
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
+            time.sleep(0.5)  # evita saturar API
             sheet.update_cell(i + 2, 4, nuevo_estado)
             registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
             break
