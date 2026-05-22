@@ -11,22 +11,29 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
-# ESTILO TARJETAS
+# ESTILO TARJETAS + HOVER
 # =============================
 st.markdown("""
 <style>
 div.stButton > button {
-    background-color: #e9ecef;
-    color: black;
-    border-radius: 12px;
-    padding: 15px;
-    text-align: left;
-    font-size: 14px;
+    background-color: transparent;
     border: none;
-    margin-bottom: 10px;
 }
-div.stButton > button:hover {
-    background-color: #dfe3e6;
+
+.card-kanban {
+    background-color:#e9ecef;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:-35px;
+    color:black;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.card-kanban:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+    cursor: pointer;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -51,14 +58,13 @@ def conectar():
 spreadsheet = conectar()
 sheet = spreadsheet.worksheet("tareas")
 
-# BITÁCORA
 try:
     log_sheet = spreadsheet.worksheet("bitacora")
 except:
     log_sheet = spreadsheet.add_worksheet("bitacora", 100, 10)
 
 # =============================
-# CACHE DATOS (CLAVE)
+# CACHE
 # =============================
 @st.cache_data(ttl=5)
 def cargar_datos():
@@ -78,13 +84,16 @@ estados = [
 ]
 
 # =============================
-# SESSION STATE
+# SESSION
 # =============================
 if "form" not in st.session_state:
     st.session_state["form"] = False
 
 if "tarea_sel" not in st.session_state:
     st.session_state["tarea_sel"] = None
+
+if "modal_open" not in st.session_state:
+    st.session_state["modal_open"] = False
 
 # =============================
 # FUNCIONES
@@ -101,15 +110,6 @@ def registrar_bitacora(id_tarea, accion):
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         accion
     ])
-    st.cache_data.clear()
-
-def actualizar_estado(id_tarea, nuevo_estado):
-    registros = sheet.get_all_records()
-    for i, fila in enumerate(registros):
-        if fila["id"] == id_tarea:
-            time.sleep(0.3)
-            sheet.update_cell(i+2,4,nuevo_estado)
-            break
     st.cache_data.clear()
 
 # =============================
@@ -136,62 +136,29 @@ with col2:
 # FORMULARIO
 # =============================
 if st.session_state["form"]:
-
     with st.form("form_tarea"):
-
         tarea = st.text_input("Tarea")
         responsables = st.multiselect("Responsables",responsables_lista)
         prioridad = st.selectbox("Prioridad",["Alta","Media","Baja"])
         fecha = st.date_input("Fecha compromiso")
         estado = st.selectbox("Estado",estados)
 
-        r1 = st.text_input("Revisor 1")
-        e1 = st.selectbox("Estado R1",["Pendiente","Validado","Devuelto"])
-        r2 = st.text_input("Revisor 2")
-        e2 = st.selectbox("Estado R2",["Pendiente","Validado","Devuelto"])
-        r3 = st.text_input("Revisor 3")
-        e3 = st.selectbox("Estado R3",["Pendiente","Validado","Devuelto"])
-
-        c1,c2 = st.columns(2)
-
-        if c1.form_submit_button("Guardar"):
+        if st.form_submit_button("Guardar"):
             nuevo_id = f"OPE{len(df)+1:05d}"
 
             sheet.append_row([
-                nuevo_id,
-                tarea,
-                ", ".join(responsables),
-                estado,
-                prioridad,
+                nuevo_id,tarea,", ".join(responsables),
+                estado,prioridad,
                 datetime.now().strftime("%Y-%m-%d"),
-                str(fecha),
-                r1,e1,r2,e2,r3,e3
+                str(fecha)
             ])
 
             registrar_bitacora(nuevo_id,"Creación")
             st.session_state["form"]=False
             st.rerun()
 
-        if c2.form_submit_button("Cancelar"):
-            st.session_state["form"]=False
-            st.rerun()
-
 # =============================
-# KPI
-# =============================
-st.subheader("📊 Resumen")
-
-hoy = pd.to_datetime(datetime.now().date())
-df["fecha_dt"] = pd.to_datetime(df["fecha_compromiso"],errors="coerce")
-
-k1,k2,k3,k4 = st.columns(4)
-k1.metric("Total",len(df))
-k2.metric("Proceso",len(df[df["estado"]=="EN PROCESO"]))
-k3.metric("Finalizadas",len(df[df["estado"]=="FINALIZADO"]))
-k4.metric("Vencidas",len(df[(df["fecha_dt"]<hoy)&(df["estado"]!="FINALIZADO")]))
-
-# =============================
-# KANBAN PRO (TARJETAS CLICKEABLES)
+# KANBAN PRO
 # =============================
 if vista == "📌 Kanban":
 
@@ -211,20 +178,12 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 👉 CONTENEDOR
                 cont = st.container()
 
                 with cont:
-                    # 👉 TARJETA VISUAL
+
                     st.markdown(f"""
-                    <div style="
-                        background-color:#e9ecef;
-                        padding:15px;
-                        border-radius:12px;
-                        margin-bottom:-35px;
-                        color:black;
-                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                    ">
+                    <div class="card-kanban">
                         <b>{row['id']} | {row['tarea']}</b><br><br>
                         👤 {row['responsable']}<br>
                         ⭐ {row['prioridad']}<br>
@@ -233,19 +192,15 @@ if vista == "📌 Kanban":
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # 👉 BOTÓN INVISIBLE ENCIMA
-                    if st.button(
-                        " ",
-                        key=f"k{row['id']}",
-                        use_container_width=True
-                    ):
+                    if st.button(" ", key=f"k{row['id']}", use_container_width=True):
                         st.session_state["tarea_sel"] = row["id"]
+                        st.session_state["modal_open"] = True
 
-                    # 👉 BARRA DE COLOR
                     st.markdown(
                         f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
                         unsafe_allow_html=True
                     )
+
 # =============================
 # LISTA
 # =============================
@@ -254,17 +209,11 @@ else:
     st.subheader("📋 Lista de tareas")
 
     gb = GridOptionsBuilder.from_dataframe(df)
-
-    gb.configure_selection(
-        selection_mode="single",
-        use_checkbox=False
-    )
-   
-    grid_options = gb.build()
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
 
     grid_response = AgGrid(
         df,
-        gridOptions=grid_options,
+        gridOptions=gb.build(),
         update_mode=GridUpdateMode.MODEL_CHANGED,
         fit_columns_on_grid_load=True
     )
@@ -274,77 +223,29 @@ else:
     if selected is not None and len(selected) > 0:
         fila = selected.iloc[0]
         st.session_state["tarea_sel"] = fila["id"]
-        
+        st.session_state["modal_open"] = True
+
 # =============================
-# PANEL DETALLE (EDITABLE)
+# MODAL DETALLE
 # =============================
-if st.session_state["tarea_sel"]:
+if st.session_state["modal_open"]:
 
-    st.markdown("---")
-    st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
+    with st.modal("Detalle de tarea"):
 
-    t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
+        t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-    col1, col2 = st.columns(2)
-
-    with col1:
         tarea_edit = st.text_input("Tarea", t["tarea"])
-        responsable_edit = st.text_input("Responsables", t["responsable"])
         estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
 
-    with col2:
-        prioridad_edit = st.selectbox(
-            "Prioridad",
-            ["Alta","Media","Baja"],
-            index=["Alta","Media","Baja"].index(t["prioridad"])
-        )
+        if st.button("💾 Guardar"):
+            registros = sheet.get_all_records()
+            for i, fila in enumerate(registros):
+                if fila["id"] == t["id"]:
+                    sheet.update_cell(i+2,4,estado_edit)
 
-        fecha_edit = st.date_input(
-            "Fecha compromiso",
-            pd.to_datetime(t["fecha_compromiso"], errors="coerce")
-        )
+            registrar_bitacora(t["id"], "Edición")
+            st.success("Guardado")
+            st.rerun()
 
-    # 🔥 GUARDAR CAMBIOS
-    if st.button("💾 Guardar cambios"):
-
-        registros = sheet.get_all_records()
-
-        for i, fila in enumerate(registros):
-            if fila["id"] == t["id"]:
-
-                sheet.update(f"A{i+2}:G{i+2}", [[
-                    t["id"],
-                    tarea_edit,
-                    responsable_edit,
-                    estado_edit,
-                    prioridad_edit,
-                    t["fecha_creacion"],
-                    str(fecha_edit)
-                ]])
-
-                registrar_bitacora(t["id"], "Edición de tarea")
-                st.success("Cambios guardados")
-                st.cache_data.clear()
-                st.rerun()
-
-    # =============================
-    # OBSERVACIÓN
-    # =============================
-    st.markdown("### 📝 Observación")
-
-    obs = st.text_input("Nueva observación")
-
-    if st.button("Guardar observación"):
-        registrar_bitacora(t["id"], obs)
-        st.success("Observación guardada")
-        st.rerun()
-
-    # =============================
-    # HISTORIAL
-    # =============================
-    st.markdown("### 📜 Historial")
-
-    logs = pd.DataFrame(log_sheet.get_all_records())
-    hist = logs[logs.iloc[:,0] == t["id"]]
-
-    st.dataframe(hist if not hist.empty else pd.DataFrame())
+        if st.button("Cerrar"):
+            st.session_state["modal_open"] = False
