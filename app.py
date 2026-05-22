@@ -249,7 +249,8 @@ else:
     selected = grid_response["selected_rows"]
 
     if selected is not None and len(selected) > 0:
-        st.session_state["tarea_sel"] = selected[0]["id"]
+        fila = selected.iloc[0]
+        st.session_state["tarea_sel"] = fila["id"]
 # =============================
 # PANEL DETALLE
 # =============================
