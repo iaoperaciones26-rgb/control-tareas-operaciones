@@ -161,8 +161,7 @@ data = sheet.get_all_records()
 df = pd.DataFrame(data)
 
 # 🔥 LIMPIEZA NUEVAMENTE
-df.columns = df.columns.str.strip()
-df.columns = df.columns.str.replace(" ", "_")
+df.columns = [str(col).strip().replace(" ", "_") for col in df.columns]
 
 if not df.empty:
     df["%_avance"] = df["Estado"].apply(calcular_avance)
