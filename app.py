@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
 st.set_page_config(layout="wide")
 
@@ -19,7 +20,14 @@ scope = [
 
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
-sheet = client.open("BD_TAREAS_OPERACIONES").sheet1
+
+sheet = client.open("BD_TAREAS_OPERACIONES").worksheet("tareas")
+
+# BITÁCORA
+try:
+    log_sheet = client.open("BD_TAREAS_OPERACIONES").worksheet("bitacora")
+except:
+    log_sheet = client.open("BD_TAREAS_OPERACIONES").add_worksheet("bitacora", 100, 10)
 
 # =============================
 # ESTADOS
@@ -31,12 +39,6 @@ estados = [
     "REVISION FINAL",
     "FINALIZADO"
 ]
-
-# =============================
-# CARGAR DATOS
-# =============================
-data = sheet.get_all_records()
-df = pd.DataFrame(data)
 
 # =============================
 # FUNCIONES
@@ -51,16 +53,30 @@ def calcular_avance(estado):
     }
     return mapa.get(estado, 0)
 
+def registrar_bitacora(id_tarea, accion):
+    log_sheet.append_row([
+        id_tarea,
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        accion
+    ])
+
 def actualizar_estado(id_tarea, nuevo_estado):
     registros = sheet.get_all_records()
 
     for i, fila in enumerate(registros):
         if fila["id"] == id_tarea:
             sheet.update_cell(i + 2, 4, nuevo_estado)
+            registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
             break
 
 # =============================
-# HEADER (BOTÓN + VISTA)
+# CARGAR DATOS
+# =============================
+data = sheet.get_all_records()
+df = pd.DataFrame(data)
+
+# =============================
+# HEADER
 # =============================
 col1, col2 = st.columns([1, 2])
 
@@ -69,27 +85,39 @@ with col1:
         st.session_state["mostrar_form"] = True
 
 with col2:
-    vista = st.radio(
-        "",
-        ["📋 Lista", "📌 Kanban"],
-        horizontal=True
-    )
+    vista = st.radio("", ["📋 Lista", "📌 Kanban"], horizontal=True)
 
-# estado inicial
 if "mostrar_form" not in st.session_state:
     st.session_state["mostrar_form"] = False
 
 # =============================
-# FORMULARIO (SOLO SI SE ACTIVA)
+# FORMULARIO PRO
 # =============================
 if st.session_state["mostrar_form"]:
 
     st.subheader("➕ Nueva tarea")
 
     with st.form("form_tarea"):
+
         tarea = st.text_input("Nombre de tarea")
         responsable = st.text_input("Responsable")
+
+        prioridad = st.selectbox("Prioridad", ["Alta", "Media", "Baja"])
+
+        fecha_compromiso = st.date_input("Fecha compromiso")
+
         estado = st.selectbox("Estado", estados)
+
+        st.markdown("### 👥 Revisores")
+
+        r1 = st.text_input("Revisor 1")
+        e1 = st.selectbox("Estado R1", ["Pendiente", "Validado", "Devuelto"])
+
+        r2 = st.text_input("Revisor 2")
+        e2 = st.selectbox("Estado R2", ["Pendiente", "Validado", "Devuelto"])
+
+        r3 = st.text_input("Revisor 3")
+        e3 = st.selectbox("Estado R3", ["Pendiente", "Validado", "Devuelto"])
 
         colf1, colf2 = st.columns(2)
 
@@ -98,7 +126,22 @@ if st.session_state["mostrar_form"]:
 
         if submit:
             nuevo_id = f"OPE{len(df)+1:05d}"
-            sheet.append_row([nuevo_id, tarea, responsable, estado])
+
+            sheet.append_row([
+                nuevo_id,
+                tarea,
+                responsable,
+                estado,
+                prioridad,
+                datetime.now().strftime("%Y-%m-%d"),
+                str(fecha_compromiso),
+                r1, e1,
+                r2, e2,
+                r3, e3
+            ])
+
+            registrar_bitacora(nuevo_id, "Creación de tarea")
+
             st.success("✅ Tarea creada")
             st.session_state["mostrar_form"] = False
             st.rerun()
@@ -108,7 +151,7 @@ if st.session_state["mostrar_form"]:
             st.rerun()
 
 # =============================
-# RECARGAR DATOS
+# RECARGAR
 # =============================
 data = sheet.get_all_records()
 df = pd.DataFrame(data)
@@ -117,22 +160,42 @@ if not df.empty:
     df["% avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
-# VISTA LISTA (DEFAULT)
+# FILTROS
+# =============================
+st.subheader("🔍 Filtros")
+
+f1, f2 = st.columns(2)
+
+estado_filtro = f1.selectbox("Estado", ["Todos"] + estados)
+resp_filtro = f2.text_input("Responsable")
+
+if estado_filtro != "Todos":
+    df = df[df["estado"] == estado_filtro]
+
+if resp_filtro:
+    df = df[df["responsable"].str.contains(resp_filtro, case=False)]
+
+# =============================
+# VISTA LISTA
 # =============================
 if vista == "📋 Lista":
 
     st.subheader("📋 Vista Lista")
 
-    if not df.empty:
-        columnas = ["id", "tarea", "responsable", "estado", "% avance"]
-        st.dataframe(df[columnas], use_container_width=True)
+    columnas = [
+        "id", "tarea", "responsable",
+        "estado", "prioridad",
+        "fecha_compromiso", "% avance"
+    ]
+
+    st.dataframe(df[columnas], use_container_width=True)
 
 # =============================
 # VISTA KANBAN
 # =============================
 else:
 
-    st.subheader("📌 Tablero Kanban")
+    st.subheader("📌 Kanban")
 
     cols = st.columns(len(estados))
 
@@ -142,37 +205,27 @@ else:
 
             tareas_estado = df[df["estado"] == estado]
 
-            if tareas_estado.empty:
-                st.write("—")
-            else:
-                for _, row in tareas_estado.iterrows():
+            for _, row in tareas_estado.iterrows():
 
-                    st.markdown(
-                        f"""
-                        <div style='
-                            background-color:#f0f2f6;
-                            padding:10px;
-                            margin-bottom:10px;
-                            border-radius:10px;
-                            border-left:5px solid #4CAF50;
-                        '>
-                            <b>{row['id']}</b><br>
-                            {row['tarea']}<br>
-                            👤 {row['responsable']}<br>
-                            📊 {row['% avance']}%
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                st.markdown(f"""
+                <div style='background:#f0f2f6;padding:10px;border-radius:10px;margin-bottom:10px'>
+                <b>{row['id']}</b><br>
+                {row['tarea']}<br>
+                👤 {row['responsable']}<br>
+                ⭐ {row['prioridad']}<br>
+                📅 {row['fecha_compromiso']}<br>
+                📊 {row['% avance']}%
+                </div>
+                """, unsafe_allow_html=True)
 
-                    colb1, colb2 = st.columns(2)
+                c1, c2 = st.columns(2)
 
-                    if i > 0:
-                        if colb1.button("⬅️", key=f"b_{row['id']}"):
-                            actualizar_estado(row["id"], estados[i - 1])
-                            st.rerun()
+                if i > 0:
+                    if c1.button("⬅️", key=f"b_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i - 1])
+                        st.rerun()
 
-                    if i < len(estados) - 1:
-                        if colb2.button("➡️", key=f"n_{row['id']}"):
-                            actualizar_estado(row["id"], estados[i + 1])
-                            st.rerun()
+                if i < len(estados) - 1:
+                    if c2.button("➡️", key=f"n_{row['id']}"):
+                        actualizar_estado(row["id"], estados[i + 1])
+                        st.rerun()
