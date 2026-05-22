@@ -232,17 +232,30 @@ else:
 
     gb = GridOptionsBuilder.from_dataframe(df)
 
-    gb.configure_selection(
-        selection_mode="single",
-        use_checkbox=False
-    )
+gb.configure_selection(
+    selection_mode="single",
+    use_checkbox=False
+)
 
+gb.configure_grid_options(
+    getRowStyle="""
+    function(params) {
+        if (params.node.isSelected()) {
+            return {
+                background: '#cfe2ff',
+                color: 'black',
+                fontWeight: 'bold'
+            };
+        }
+    }
+    """
+)   
     grid_options = gb.build()
 
     grid_response = AgGrid(
         df,
         gridOptions=grid_options,
-        update_mode=GridUpdateMode.SELECTION_CHANGED,
+        update_mode=GridUpdateMode.MODEL_CHANGED,
         fit_columns_on_grid_load=True
     )
 
@@ -252,7 +265,7 @@ else:
         fila = selected.iloc[0]
         st.session_state["tarea_sel"] = fila["id"]
 # =============================
-# PANEL DETALLE
+# PANEL DETALLE (EDITABLE)
 # =============================
 if st.session_state["tarea_sel"]:
 
@@ -264,26 +277,60 @@ if st.session_state["tarea_sel"]:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.write(f"**Tarea:** {t['tarea']}")
-        st.write(f"**Responsables:** {t['responsable']}")
-        st.write(f"**Estado:** {t['estado']}")
-        st.write(f"**Prioridad:** {t['prioridad']}")
-        st.write(f"**Fecha:** {t['fecha_compromiso']}")
+        tarea_edit = st.text_input("Tarea", t["tarea"])
+        responsable_edit = st.text_input("Responsables", t["responsable"])
+        estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
 
     with col2:
-        st.write(f"R1: {t['revisor_1']} ({t['estado_r1']})")
-        st.write(f"R2: {t['revisor_2']} ({t['estado_r2']})")
-        st.write(f"R3: {t['revisor_3']} ({t['estado_r3']})")
+        prioridad_edit = st.selectbox(
+            "Prioridad",
+            ["Alta","Media","Baja"],
+            index=["Alta","Media","Baja"].index(t["prioridad"])
+        )
 
+        fecha_edit = st.date_input(
+            "Fecha compromiso",
+            pd.to_datetime(t["fecha_compromiso"], errors="coerce")
+        )
+
+    # 🔥 GUARDAR CAMBIOS
+    if st.button("💾 Guardar cambios"):
+
+        registros = sheet.get_all_records()
+
+        for i, fila in enumerate(registros):
+            if fila["id"] == t["id"]:
+
+                sheet.update(f"A{i+2}:G{i+2}", [[
+                    t["id"],
+                    tarea_edit,
+                    responsable_edit,
+                    estado_edit,
+                    prioridad_edit,
+                    t["fecha_creacion"],
+                    str(fecha_edit)
+                ]])
+
+                registrar_bitacora(t["id"], "Edición de tarea")
+                st.success("Cambios guardados")
+                st.cache_data.clear()
+                st.rerun()
+
+    # =============================
+    # OBSERVACIÓN
+    # =============================
     st.markdown("### 📝 Observación")
 
     obs = st.text_input("Nueva observación")
 
     if st.button("Guardar observación"):
         registrar_bitacora(t["id"], obs)
-        st.success("Guardado")
+        st.success("Observación guardada")
         st.rerun()
 
+    # =============================
+    # HISTORIAL
+    # =============================
     st.markdown("### 📜 Historial")
 
     logs = pd.DataFrame(log_sheet.get_all_records())
