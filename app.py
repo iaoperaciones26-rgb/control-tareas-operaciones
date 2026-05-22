@@ -49,6 +49,15 @@ estados = [
 ]
 
 # =============================
+# SESSION STATE
+# =============================
+if "form" not in st.session_state:
+    st.session_state["form"] = False
+
+if "tarea_sel" not in st.session_state:
+    st.session_state["tarea_sel"] = None
+
+# =============================
 # FUNCIONES
 # =============================
 def calcular_avance(estado):
@@ -78,25 +87,16 @@ def actualizar_estado(id_tarea, nuevo_estado):
 df = pd.DataFrame(sheet.get_all_records())
 
 # =============================
-# SESSION STATE HISTORIAL
-# =============================
-if "hist_id" not in st.session_state:
-    st.session_state["hist_id"] = None
-
-# =============================
 # HEADER
 # =============================
 col1,col2 = st.columns([1,2])
 
 with col1:
     if st.button("➕ Nueva tarea"):
-        st.session_state["form"]=True
+        st.session_state["form"] = True
 
 with col2:
     vista = st.radio("",["📋 Lista","📌 Kanban"],horizontal=True)
-
-if "form" not in st.session_state:
-    st.session_state["form"]=False
 
 # =============================
 # FORMULARIO
@@ -148,7 +148,7 @@ if st.session_state["form"]:
 df = pd.DataFrame(sheet.get_all_records())
 
 if not df.empty:
-    df["avance"]=df["estado"].apply(calcular_avance)
+    df["avance"] = df["estado"].apply(calcular_avance)
 
 # =============================
 # KPI
@@ -156,7 +156,7 @@ if not df.empty:
 st.subheader("📊 Resumen")
 
 hoy = pd.to_datetime(datetime.now().date())
-df["fecha_dt"]=pd.to_datetime(df["fecha_compromiso"],errors="coerce")
+df["fecha_dt"] = pd.to_datetime(df["fecha_compromiso"],errors="coerce")
 
 k1,k2,k3,k4 = st.columns(4)
 k1.metric("Total",len(df))
@@ -174,12 +174,16 @@ def semaforo(row):
     if (f-hoy).days<=2: return "🟡"
     return "🟢"
 
-df["alerta"]=df.apply(semaforo,axis=1)
+df["alerta"] = df.apply(semaforo,axis=1)
 
 # =============================
-# VISTA LISTA
+# LISTA
 # =============================
 if vista=="📋 Lista":
+
+    for _, row in df.iterrows():
+        if st.button(f"{row['id']} - {row['tarea']}", key=f"l{row['id']}"):
+            st.session_state["tarea_sel"] = row["id"]
 
     st.dataframe(df[[
         "alerta","id","tarea","responsable",
@@ -187,7 +191,7 @@ if vista=="📋 Lista":
     ]],use_container_width=True)
 
 # =============================
-# VISTA KANBAN
+# KANBAN
 # =============================
 else:
 
@@ -197,59 +201,74 @@ else:
         with cols[i]:
             st.markdown(f"### {estado}")
 
-            tareas=df[df["estado"]==estado]
+            tareas = df[df["estado"]==estado]
 
             for _,row in tareas.iterrows():
 
                 color={"Alta":"#ff4d4d","Media":"#ffc107","Baja":"#4CAF50"}
                 c=color.get(row["prioridad"],"#ccc")
 
-                obs=st.text_input(f"Obs {row['id']}",key=f"obs{row['id']}")
+                if st.button(f"{row['id']} - {row['tarea']}", key=f"k{row['id']}"):
+                    st.session_state["tarea_sel"] = row["id"]
 
                 st.markdown(f"""
                 <div style='background:#e9ecef;padding:10px;border-radius:10px;
-                border-left:8px solid {c};color:black'>
-                <b>{row['id']}</b><br>
-                {row['tarea']}<br>
+                border-left:8px solid {c};color:black;margin-bottom:10px'>
                 👤 {row['responsable']}
                 </div>
                 """,unsafe_allow_html=True)
 
-                if st.button("📜 Ver historial",key=f"h{row['id']}"):
-                    st.session_state["hist_id"]=row["id"]
-
-                c1,c2=st.columns(2)
+                c1,c2 = st.columns(2)
 
                 if i>0:
-                    if c1.button("⬅️",key=f"b{row['id']}"):
-                        nuevo=estados[i-1]
-                        actualizar_estado(row["id"],nuevo)
-                        registrar_bitacora(row["id"],f"{nuevo} | {obs}")
+                    if c1.button("⬅️", key=f"b{row['id']}"):
+                        actualizar_estado(row["id"], estados[i-1])
                         st.rerun()
 
                 if i<len(estados)-1:
-                    if c2.button("➡️",key=f"n{row['id']}"):
-                        nuevo=estados[i+1]
-                        actualizar_estado(row["id"],nuevo)
-                        registrar_bitacora(row["id"],f"{nuevo} | {obs}")
+                    if c2.button("➡️", key=f"n{row['id']}"):
+                        actualizar_estado(row["id"], estados[i+1])
                         st.rerun()
 
 # =============================
-# HISTORIAL (SIDEBAR + SELECTOR)
+# PANEL DETALLE
 # =============================
-st.sidebar.subheader("📜 Historial")
+if st.session_state["tarea_sel"]:
 
-# Selector
-ids = df["id"].dropna().unique().tolist()
-sel = st.sidebar.selectbox("Seleccionar tarea",ids)
+    st.markdown("---")
+    st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
-if sel:
-    st.session_state["hist_id"]=sel
+    tarea_df = df[df["id"] == st.session_state["tarea_sel"]]
 
-# Mostrar historial
-if st.session_state["hist_id"]:
-    logs = pd.DataFrame(log_sheet.get_all_records())
-    hist = logs[logs.iloc[:,0]==st.session_state["hist_id"]]
+    if not tarea_df.empty:
+        t = tarea_df.iloc[0]
 
-    st.sidebar.write(f"### {st.session_state['hist_id']}")
-    st.sidebar.write(hist if not hist.empty else "Sin historial")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.write(f"**Tarea:** {t['tarea']}")
+            st.write(f"**Responsables:** {t['responsable']}")
+            st.write(f"**Estado:** {t['estado']}")
+            st.write(f"**Prioridad:** {t['prioridad']}")
+            st.write(f"**Fecha:** {t['fecha_compromiso']}")
+
+        with col2:
+            st.write(f"R1: {t['revisor_1']} ({t['estado_r1']})")
+            st.write(f"R2: {t['revisor_2']} ({t['estado_r2']})")
+            st.write(f"R3: {t['revisor_3']} ({t['estado_r3']})")
+
+        st.markdown("### 📝 Observación")
+
+        obs = st.text_input("Nueva observación")
+
+        if st.button("Guardar"):
+            registrar_bitacora(t["id"], obs)
+            st.success("Guardado")
+            st.rerun()
+
+        st.markdown("### 📜 Historial")
+
+        logs = pd.DataFrame(log_sheet.get_all_records())
+        hist = logs[logs.iloc[:,0] == t["id"]]
+
+        st.dataframe(hist if not hist.empty else pd.DataFrame())
