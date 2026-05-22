@@ -248,8 +248,8 @@ else:
 
     selected = grid_response["selected_rows"]
 
-    if selected:
-        st.session_state["tarea_sel"] = selected[0]["id"]
+if selected is not None and len(selected) > 0:
+    st.session_state["tarea_sel"] = selected[0]["id"]
 # =============================
 # PANEL DETALLE
 # =============================
