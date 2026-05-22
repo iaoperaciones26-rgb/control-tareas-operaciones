@@ -4,6 +4,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 import time
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 st.set_page_config(layout="wide")
 
@@ -222,23 +223,9 @@ if vista=="📌 Kanban":
                     unsafe_allow_html=True
                 )
 
-                c1,c2 = st.columns(2)
-
-                if i>0:
-                    if c1.button("⬅️", key=f"b{row['id']}"):
-                        actualizar_estado(row["id"], estados[i-1])
-                        st.rerun()
-
-                if i<len(estados)-1:
-                    if c2.button("➡️", key=f"n{row['id']}"):
-                        actualizar_estado(row["id"], estados[i+1])
-                        st.rerun()
-
 # =============================
 # LISTA
 # =============================
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-
 else:
 
     st.subheader("📋 Lista de tareas")
