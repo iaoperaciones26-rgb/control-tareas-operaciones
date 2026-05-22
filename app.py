@@ -212,14 +212,11 @@ if vista=="📌 Kanban":
                 }.get(row["prioridad"],"#ccc")
 
                 if st.button(
-                    f"""
-**{row['id']} | {row['tarea']}**
-
-👤 {row['responsable']}
-⭐ {row['prioridad']}
-📅 {row['fecha_compromiso']}
-📊 {row['avance']}%
-""",
+                f"{row['id']} | {row['tarea']}<br><br>"
+                f"👤 {row['responsable']}<br>"
+                f"⭐ {row['prioridad']}<br>"
+                f"📅 {row['fecha_compromiso']}<br>"
+                f"📊 {row['avance']}%",
                     key=f"k{row['id']}",
                     use_container_width=True
                 ):
