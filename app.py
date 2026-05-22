@@ -137,7 +137,7 @@ with col2:
 # =============================
 if st.session_state["form"]:
 
-    with st.form("form"):
+    with st.form("form_tarea"):
 
         tarea = st.text_input("Tarea")
         responsables = st.multiselect("Responsables",responsables_lista)
