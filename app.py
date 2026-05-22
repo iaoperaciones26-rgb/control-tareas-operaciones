@@ -238,11 +238,7 @@ if vista=="📌 Kanban":
 # LISTA
 # =============================
 else:
-    for _,row in df.iterrows():
-        if st.button(f"{row['id']} - {row['tarea']}", key=f"l{row['id']}"):
-            st.session_state["tarea_sel"] = row["id"]
-
-    st.dataframe(df)
+    st.dataframe(df, use_container_width=True)
 
 # =============================
 # PANEL DETALLE
