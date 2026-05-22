@@ -113,6 +113,15 @@ def registrar_bitacora(id_tarea, accion):
     ])
     st.cache_data.clear()
 
+def actualizar_estado(id_tarea, nuevo_estado):
+    registros = sheet.get_all_records()
+    for i, fila in enumerate(registros):
+        if fila["id"] == id_tarea:
+            time.sleep(0.3)
+            sheet.update_cell(i+2,4,nuevo_estado)
+            break
+    st.cache_data.clear()
+
 # =============================
 # DATA
 # =============================
@@ -138,6 +147,7 @@ with col2:
 # =============================
 if st.session_state["form"]:
     with st.form("form_tarea"):
+
         tarea = st.text_input("Tarea")
         responsables = st.multiselect("Responsables",responsables_lista)
         prioridad = st.selectbox("Prioridad",["Alta","Media","Baja"])
@@ -148,8 +158,11 @@ if st.session_state["form"]:
             nuevo_id = f"OPE{len(df)+1:05d}"
 
             sheet.append_row([
-                nuevo_id,tarea,", ".join(responsables),
-                estado,prioridad,
+                nuevo_id,
+                tarea,
+                ", ".join(responsables),
+                estado,
+                prioridad,
                 datetime.now().strftime("%Y-%m-%d"),
                 str(fecha)
             ])
@@ -159,7 +172,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN PRO
+# KANBAN
 # =============================
 if vista == "📌 Kanban":
 
@@ -181,7 +194,6 @@ if vista == "📌 Kanban":
 
                 cont = st.container()
 
-                # ✅ TODO debe ir dentro de cont
                 with cont:
 
                     st.markdown(f"""
@@ -194,31 +206,27 @@ if vista == "📌 Kanban":
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # 🔥 BOTONES
                     colA, colB, colC = st.columns([1,2,1])
 
-                    # ⬅️ ATRÁS
                     if i > 0:
                         if colA.button("⬅️", key=f"back_{row['id']}"):
                             actualizar_estado(row["id"], estados[i-1])
                             st.rerun()
 
-                    # ➡️ ADELANTE
-                    if i < len(estados) - 1:
+                    if i < len(estados)-1:
                         if colC.button("➡️", key=f"next_{row['id']}"):
                             actualizar_estado(row["id"], estados[i+1])
                             st.rerun()
 
-                    # 👉 CLICK TARJETA
                     if st.button(" ", key=f"k{row['id']}", use_container_width=True):
                         st.session_state["tarea_sel"] = row["id"]
                         st.session_state["modal_open"] = True
 
-                    # BARRA COLOR
                     st.markdown(
                         f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
                         unsafe_allow_html=True
                     )
+
 # =============================
 # LISTA
 # =============================
@@ -244,7 +252,7 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# DETALLE COMPLETO (EDITABLE PRO)
+# DETALLE
 # =============================
 if st.session_state["modal_open"]:
 
@@ -258,12 +266,7 @@ if st.session_state["modal_open"]:
     with col1:
         tarea_edit = st.text_input("Tarea", t["tarea"])
         responsable_edit = st.text_input("Responsables", t["responsable"])
-
-        estado_edit = st.selectbox(
-            "Estado",
-            estados,
-            index=estados.index(t["estado"])
-        )
+        estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
 
     with col2:
         prioridad_edit = st.selectbox(
@@ -277,12 +280,7 @@ if st.session_state["modal_open"]:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
-    # =============================
-    # BOTONES
-    # =============================
-    col_btn1, col_btn2 = st.columns(2)
-
-    if col_btn1.button("💾 Guardar cambios"):
+    if st.button("💾 Guardar cambios"):
 
         registros = sheet.get_all_records()
 
@@ -299,29 +297,23 @@ if st.session_state["modal_open"]:
                     str(fecha_edit)
                 ]])
 
-                registrar_bitacora(t["id"], f"Cambio estado a {estado_edit}")
+                registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
                 st.success("Cambios guardados")
                 st.cache_data.clear()
                 st.rerun()
 
-    if col_btn2.button("❌ Cerrar"):
+    if st.button("Cerrar"):
         st.session_state["modal_open"] = False
 
-    # =============================
-    # OBSERVACIONES
-    # =============================
-    st.markdown("### 📝 Observaciones")
+    st.markdown("### 📝 Observación")
 
     obs = st.text_input("Nueva observación")
 
     if st.button("Guardar observación"):
         registrar_bitacora(t["id"], obs)
-        st.success("Observación guardada")
+        st.success("Guardado")
         st.rerun()
 
-    # =============================
-    # HISTORIAL
-    # =============================
     st.markdown("### 📜 Historial")
 
     logs = pd.DataFrame(log_sheet.get_all_records())
