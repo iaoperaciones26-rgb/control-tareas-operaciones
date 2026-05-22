@@ -191,7 +191,7 @@ k3.metric("Finalizadas",len(df[df["estado"]=="FINALIZADO"]))
 k4.metric("Vencidas",len(df[(df["fecha_dt"]<hoy)&(df["estado"]!="FINALIZADO")]))
 
 # =============================
-# KANBAN
+# KANBAN PRO (TARJETAS CLICKEABLES)
 # =============================
 if vista == "📌 Kanban":
 
@@ -211,33 +211,41 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 👉 TARJETA (HTML BONITA)
-                st.markdown(f"""
-                <div style="
-                    background-color:#e9ecef;
-                    padding:15px;
-                    border-radius:12px;
-                    margin-bottom:5px;
-                    color:black;
-                ">
-                    <b>{row['id']} | {row['tarea']}</b><br><br>
-                    👤 {row['responsable']}<br>
-                    ⭐ {row['prioridad']}<br>
-                    📅 {row['fecha_compromiso']}<br>
-                    📊 {row['avance']}%
-                </div>
-                """, unsafe_allow_html=True)
+                # 👉 CONTENEDOR
+                cont = st.container()
 
-                # 👉 BOTÓN INVISIBLE (para mantener funcionalidad)
-                if st.button("Abrir", key=f"k{row['id']}"):
-                    st.session_state["tarea_sel"] = row["id"]
+                with cont:
+                    # 👉 TARJETA VISUAL
+                    st.markdown(f"""
+                    <div style="
+                        background-color:#e9ecef;
+                        padding:15px;
+                        border-radius:12px;
+                        margin-bottom:-35px;
+                        color:black;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    ">
+                        <b>{row['id']} | {row['tarea']}</b><br><br>
+                        👤 {row['responsable']}<br>
+                        ⭐ {row['prioridad']}<br>
+                        📅 {row['fecha_compromiso']}<br>
+                        📊 {row['avance']}%
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                # 👉 BARRA DE COLOR
-                st.markdown(
-                    f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
-                    unsafe_allow_html=True
-                )
+                    # 👉 BOTÓN INVISIBLE ENCIMA
+                    if st.button(
+                        " ",
+                        key=f"k{row['id']}",
+                        use_container_width=True
+                    ):
+                        st.session_state["tarea_sel"] = row["id"]
 
+                    # 👉 BARRA DE COLOR
+                    st.markdown(
+                        f"<div style='height:6px;background:{color};margin-bottom:10px;border-radius:5px'></div>",
+                        unsafe_allow_html=True
+                    )
 # =============================
 # LISTA
 # =============================
