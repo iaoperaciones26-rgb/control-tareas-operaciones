@@ -55,8 +55,13 @@ def conectar():
     client = gspread.authorize(creds)
     return client.open("BD_TAREAS_OPERACIONES")
 
-spreadsheet = conectar()
-sheet = spreadsheet.worksheet("tareas")
+try:
+    spreadsheet = conectar()
+    sheet = spreadsheet.worksheet("tareas")
+except Exception as e:
+    st.error("❌ Error conectando con Google Sheets. Intenta recargar la app.")
+    st.stop()
+
 
 # BITÁCORA
 try:
