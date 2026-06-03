@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (COMPACTO CORREGIDO FINAL)
+# KANBAN (FINAL SIN HTML)
 # =============================
 if vista == "📌 Kanban":
 
@@ -327,35 +327,31 @@ if vista == "📌 Kanban":
                 tarea_txt = row["tarea"]
                 if len(tarea_txt) > 35:
                     tarea_txt = tarea_txt[:35] + "..."
-                
+
                 # 👤 INICIALES
                 nombre = row["responsable"]
                 iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
-                
-                # 🧩 CARD (SIN HTML PROBLEMÁTICO)
-                st.markdown(f"""
-                <div class="card-kanban" style="
-                    border-left:5px solid {color};
-                    background-color:#262730;
-                    padding:8px;
-                    border-radius:8px;
-                    margin-bottom:6px;
-                    color:white;
-                    font-size:13px;
-                ">
-                
-                    <b>{row['id']} | {tarea_txt}</b><br>
-                
-                    👤 [{iniciales}] {nombre}<br>
-                
-                    📅 {row['fecha_compromiso']}<br>
-                
-                    📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
-                
-                </div>
-                """, unsafe_allow_html=True)
 
-                # 🔘 BOTONES (NO CAMBIAN)
+                # 🧩 CARD (SIN HTML)
+                with st.container():
+
+                    st.markdown(f"**{row['id']} | {tarea_txt}**")
+
+                    st.markdown(f"👤 **[{iniciales}]** {nombre}")
+
+                    st.markdown(f"📅 {row['fecha_compromiso']}")
+
+                    st.markdown(
+                        f"📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d"
+                    )
+
+                    # 🎨 Línea lateral simple (truco visual)
+                    st.markdown(
+                        f"<div style='height:4px;background:{color};margin-bottom:6px;border-radius:5px'></div>",
+                        unsafe_allow_html=True
+                    )
+
+                # 🔘 BOTONES
                 colA, colB, colC = st.columns([1,1,1])
 
                 if i > 0:
