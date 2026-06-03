@@ -185,16 +185,23 @@ if st.session_state["form"]:
         if st.form_submit_button("Guardar"):
             nuevo_id = f"OPE{len(df)+1:05d}"
 
+           ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             sheet.append_row([
                 nuevo_id,
                 tarea,
                 ", ".join(responsables),
                 estado,
                 prioridad,
-                datetime.now().strftime("%Y-%m-%d"),
-                str(fecha)
+                ahora,
+                str(fecha),
+                ahora,   # fecha_nuevo
+                "",      # fecha_en_proceso
+                "",      # fecha_en_revision
+                "",      # fecha_revision_final
+                ""       # fecha_finalizado
             ])
-
+        
             registrar_bitacora(nuevo_id, "Creación")
 
             st.session_state["refresh_key"] += 1
