@@ -370,13 +370,7 @@ if vista == "📌 Kanban":
                             st.session_state["tarea_sel"] = row["id"]
                             st.session_state["modal_open"] = True
                             st.session_state["estado_objetivo"] = estados[i-1]
-                    
-                    # 👁
-                    if colB.button("👁", key=f"view_{row['id']}"):
-                        st.session_state["tarea_sel"] = row["id"]
-                        st.session_state["modal_open"] = True
-                        st.session_state["estado_objetivo"] = row["estado"]
-                    
+                   
                     # ➡️
                     if i < len(estados)-1:
                         if colC.button("➡️", key=f"next_{row['id']}"):
