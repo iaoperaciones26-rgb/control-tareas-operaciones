@@ -546,15 +546,25 @@ if st.session_state["modal_open"]:
 
     # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
-
+    
     logs = pd.DataFrame(log_sheet.get_all_records())
-
-    if not logs.empty:
+    
+    # 🛑 Caso 1: bitácora completamente vacía
+    if logs.empty:
+        st.info("📝 Sin historial disponible para esta tarea")
+    
+    else:
+        # 🔹 Asegurar estructura de columnas
         logs.columns = ["ID", "Fecha / Hora", "Detalle"]
-
-    hist = logs[logs["ID"] == t["id"]]
-
-    st.dataframe(
-        hist.reset_index(drop=True),
-        use_container_width=True
-    )
+    
+        # 🔹 Filtrar por tarea
+        hist = logs[logs["ID"] == t["id"]]
+    
+        # 🛑 Caso 2: tarea sin historial
+        if hist.empty:
+            st.info("📝 Esta tarea aún no tiene historial")
+        else:
+            st.dataframe(
+                hist.reset_index(drop=True),
+                use_container_width=True
+            )
