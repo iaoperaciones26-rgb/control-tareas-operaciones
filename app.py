@@ -541,8 +541,9 @@ if st.session_state["modal_open"]:
         st.rerun()
 
     # ❌ CERRAR (opcional)
-    if st.button("Cerrar"):
+    if st.button("❌ Cerrar"):
         st.session_state["modal_open"] = False
+        st.rerun()
 
     # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
