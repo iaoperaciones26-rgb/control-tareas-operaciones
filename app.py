@@ -431,7 +431,10 @@ if st.session_state["modal_open"]:
     st.markdown("---")
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
-    t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
+    df_full = cargar_datos(st.session_state["refresh_key"])
+    df_full = calcular_tiempos(df_full)
+    
+    t = df_full[df_full["id"] == st.session_state["tarea_sel"]].iloc[0]
 
     # 🔥 INDICADORES VISUALES
     st.markdown(f"### ⏱ Indicadores de tiempo")
