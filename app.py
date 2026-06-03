@@ -37,7 +37,7 @@ if not df.empty:
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("📊 Avance general", f"{avance_general}%")
-    col2.metric("⚠️ Vencidas", vencidas)
+    col2.metric("⚠️ Vencidas", vencidas, delta="Crítico" if vencidas > 0 else "OK")
     col3.metric("🔄 En proceso", en_proceso)
     col4.metric("🔥 Alta prioridad", alta)
 
