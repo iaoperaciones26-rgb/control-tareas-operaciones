@@ -314,7 +314,30 @@ if st.session_state["form"]:
 
             st.session_state["form"] = False
             st.rerun()
+# =============================
+# KANBAN / LISTA
+# =============================
+if st.session_state["vista"] != "detalle":
 
+    if vista == "📌 Kanban":
+
+        # 🛑 VALIDACIÓN PRIMERO
+        if df.empty:
+            st.warning("No hay tareas para mostrar en el tablero")
+
+        else:
+            cols = st.columns(len(estados))
+
+            for i, estado in enumerate(estados):
+                with cols[i]:
+                    ...
+                    # TODO tu código igual
+
+    else:
+
+        st.subheader("📋 Lista de tareas")
+
+        # TODO tu código igual
 # =============================
 # KANBAN (COMPACTO FINAL LIMPIO)
 # =============================
