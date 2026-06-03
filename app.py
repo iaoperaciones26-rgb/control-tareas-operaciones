@@ -12,6 +12,7 @@ st.title("📊 Control Tareas Operaciones")
 # =============================
 # ESTILO TARJETAS + HOVER
 # =============================
+
 st.markdown("""
 <style>
 div.stButton > button {
@@ -40,6 +41,7 @@ div.stButton > button {
 # =============================
 # CONEXIÓN
 # =============================
+
 creds_dict = st.secrets["gcp_service_account"]
 
 scope = [
@@ -60,8 +62,11 @@ try:
 except Exception as e:
     st.error("❌ Error conectando con Google Sheets. Intenta recargar la app.")
     st.stop()
-
+    
+# =============================
 # BITÁCORA
+# =============================
+
 try:
     log_sheet = spreadsheet.worksheet("bitacora")
 except:
@@ -70,13 +75,15 @@ except:
 # =============================
 # CACHE
 # =============================
-@st.cache_data(ttl=5)
-def cargar_datos():
-    return pd.DataFrame(sheet.get_all_records())
 
+@st.cache_data(ttl=60)
+def cargar_datos(refresh_key):
+    return pd.DataFrame(sheet.get_all_records())
+    
 # =============================
 # LISTAS
 # =============================
+
 responsables_lista = [
     "Herman Jaramillo","Simon Gabela","Sandy Perez","Alexis Cevallos",
     "Stalin Villalva","Andres Proaño","Clara Arteaga","Javier Ruiz",
@@ -90,6 +97,10 @@ estados = [
 # =============================
 # SESSION STATE
 # =============================
+
+if "refresh_key" not in st.session_state:
+    st.session_state["refresh_key"] = 0
+
 if "form" not in st.session_state:
     st.session_state["form"] = False
 
@@ -102,6 +113,7 @@ if "modal_open" not in st.session_state:
 # =============================
 # FUNCIONES
 # =============================
+
 def calcular_avance(estado):
     return {
         "NUEVO":0,"EN PROCESO":25,"EN REVISION":50,
@@ -118,7 +130,7 @@ def registrar_bitacora(id_tarea, accion):
 
 def actualizar_estado(id_tarea, nuevo_estado):
 
-    df_local = cargar_datos()
+    df_local = cargar_datos(st.session_state["refresh_key"])
 
     fila_index = df_local.index[df_local["id"] == id_tarea]
 
@@ -132,11 +144,12 @@ def actualizar_estado(id_tarea, nuevo_estado):
 
     registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
 
-    st.cache_data.clear()
-
+    st.session_state["refresh_key"] += 1
+    
 # =============================
 # HEADER
 # =============================
+
 col1,col2 = st.columns([1,2])
 
 with col1:
@@ -149,12 +162,14 @@ with col2:
 # =============================
 # FILTRO GLOBAL
 # =============================
+
 filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
 
 # =============================
 # DATA
 # =============================
-df = cargar_datos()
+
+df = cargar_datos(st.session_state["refresh_key"])
 
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
@@ -171,6 +186,7 @@ if filtro:
 # =============================
 # FORMULARIO
 # =============================
+
 if st.session_state["form"]:
     with st.form("form_tarea"):
 
@@ -200,6 +216,7 @@ if st.session_state["form"]:
 # =============================
 # KANBAN
 # =============================
+
 if vista == "📌 Kanban":
 
     cols = st.columns(len(estados))
@@ -256,6 +273,7 @@ if vista == "📌 Kanban":
 # =============================
 # LISTA
 # =============================
+
 else:
 
     st.subheader("📋 Lista de tareas")
@@ -280,6 +298,7 @@ else:
 # =============================
 # DETALLE
 # =============================
+
 if st.session_state["modal_open"]:
 
     st.markdown("---")
