@@ -316,64 +316,68 @@ if st.session_state["form"]:
 # KANBAN (COMPACTO FINAL LIMPIO)
 # =============================
 if vista == "📌 Kanban":
-if df.empty:
-    st.warning("No hay tareas para mostrar en el tablero")
-    cols = st.columns(len(estados))
 
-    for i, estado in enumerate(estados):
-        with cols[i]:
-            st.markdown(f"### {estado}")
+    # 🛑 VALIDACIÓN PRIMERO
+    if df.empty:
+        st.warning("No hay tareas para mostrar en el tablero")
 
-            tareas = df[df["estado"] == estado]
+    else:
+        cols = st.columns(len(estados))
 
-            for _, row in tareas.iterrows():
+        for i, estado in enumerate(estados):
+            with cols[i]:
+                st.markdown(f"### {estado}")
 
-                # 🎨 Color por prioridad
-                color = {
-                    "Alta": "#ff4d4d",
-                    "Media": "#ffc107",
-                    "Baja": "#4CAF50"
-                }.get(row["prioridad"], "#ccc")
+                tareas = df[df["estado"] == estado]
 
-                # 📌 TRUNCAR SOLO TÍTULO (SIN TOCAR NADA MÁS)
-                tarea_txt = row["tarea"]
-                if len(tarea_txt) > 35:
-                    tarea_txt = tarea_txt[:35] + "..."
+                for _, row in tareas.iterrows():
 
-                # 🧩 CARD (TU DISEÑO ORIGINAL)
-                st.markdown(f"""
-                <div style="
-                    border-left:5px solid {color};
-                    background-color:#262730;
-                    padding:8px;
-                    border-radius:8px;
-                    margin-bottom:6px;
-                    color:white;
-                    font-size:13px;
-                ">
-                    <b>{row['id']} | {tarea_txt}</b><br>
-                    👤 {row['responsable']}<br>
-                    📅 {row['fecha_compromiso']}<br>
-                    📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
-                </div>
-                """, unsafe_allow_html=True)
+                    # 🎨 Color por prioridad
+                    color = {
+                        "Alta": "#ff4d4d",
+                        "Media": "#ffc107",
+                        "Baja": "#4CAF50"
+                    }.get(row["prioridad"], "#ccc")
 
-                # 🔘 BOTONES (IGUAL)
-                colA, colB, colC = st.columns([1,1,1])
+                    # 📌 TRUNCAR SOLO TÍTULO
+                    tarea_txt = row["tarea"]
+                    if len(tarea_txt) > 35:
+                        tarea_txt = tarea_txt[:35] + "..."
 
-                if i > 0:
-                    if colA.button("⬅️", key=f"back_{row['id']}"):
-                        actualizar_estado(row["id"], estados[i-1])
-                        st.rerun()
+                    # 🧩 CARD
+                    st.markdown(f"""
+                    <div style="
+                        border-left:5px solid {color};
+                        background-color:#262730;
+                        padding:8px;
+                        border-radius:8px;
+                        margin-bottom:6px;
+                        color:white;
+                        font-size:13px;
+                    ">
+                        <b>{row['id']} | {tarea_txt}</b><br>
+                        👤 {row['responsable']}<br>
+                        📅 {row['fecha_compromiso']}<br>
+                        📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
+                    </div>
+                    """, unsafe_allow_html=True)
 
-                if colB.button("👁", key=f"view_{row['id']}"):
-                    st.session_state["tarea_sel"] = row["id"]
-                    st.session_state["modal_open"] = True
+                    # 🔘 BOTONES
+                    colA, colB, colC = st.columns([1,1,1])
 
-                if i < len(estados)-1:
-                    if colC.button("➡️", key=f"next_{row['id']}"):
-                        actualizar_estado(row["id"], estados[i+1])
-                        st.rerun()
+                    if i > 0:
+                        if colA.button("⬅️", key=f"back_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i-1])
+                            st.rerun()
+
+                    if colB.button("👁", key=f"view_{row['id']}"):
+                        st.session_state["tarea_sel"] = row["id"]
+                        st.session_state["modal_open"] = True
+
+                    if i < len(estados)-1:
+                        if colC.button("➡️", key=f"next_{row['id']}"):
+                            actualizar_estado(row["id"], estados[i+1])
+                            st.rerun()
                         
 # =============================
 # LISTA
