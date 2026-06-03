@@ -153,7 +153,55 @@ def actualizar_estado(id_tarea, nuevo_estado):
     registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
 
     st.session_state["refresh_key"] += 1
+    
+def calcular_tiempos(df):
 
+    ahora = pd.to_datetime(datetime.now())
+
+    # Convertir columnas a datetime
+    cols_fechas = [
+        "fecha_nuevo",
+        "fecha_en_proceso",
+        "fecha_en_revision",
+        "fecha_revision_final",
+        "fecha_finalizado"
+    ]
+
+    for col in cols_fechas:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors="coerce")
+
+    # ⏱ Tiempo acumulado (desde NUEVO)
+    df["tiempo_total_dias"] = (ahora - df["fecha_nuevo"]).dt.days
+
+    # ⏱ Tiempo por etapa actual
+    df["tiempo_etapa_dias"] = 0
+
+    for i, row in df.iterrows():
+
+        if row["estado"] == "NUEVO":
+            inicio = row["fecha_nuevo"]
+
+        elif row["estado"] == "EN PROCESO":
+            inicio = row["fecha_en_proceso"]
+
+        elif row["estado"] == "EN REVISION":
+            inicio = row["fecha_en_revision"]
+
+        elif row["estado"] == "REVISION FINAL":
+            inicio = row["fecha_revision_final"]
+
+        elif row["estado"] == "FINALIZADO":
+            inicio = row["fecha_finalizado"]
+
+        else:
+            inicio = None
+
+        if pd.notnull(inicio):
+            df.at[i, "tiempo_etapa_dias"] = (ahora - inicio).days
+
+    return df
+    
 # =============================
 # HEADER
 # =============================
