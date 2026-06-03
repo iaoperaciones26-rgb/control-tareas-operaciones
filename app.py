@@ -232,6 +232,8 @@ filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc."
 # DATA
 # =============================
 df = cargar_datos(st.session_state["refresh_key"])
+if df.empty:
+    st.info("📭 No hay tareas registradas aún. Puedes crear una nueva tarea.")
 
 df = calcular_tiempos(df)
 
