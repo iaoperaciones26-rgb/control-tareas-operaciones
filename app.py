@@ -384,7 +384,28 @@ if vista == "📌 Kanban":
 else:
 
     st.subheader("📋 Lista de tareas")
+    
+    # 📝 Agregar columna visible de observación
+    if "ultima_observacion" in df.columns:
+        df["Observación"] = df["ultima_observacion"].apply(
+            lambda x: x[:60] + "..." if len(str(x)) > 60 else x
+        )
+    else:
+        df["Observación"] = ""
 
+    columnas_mostrar = [
+        "id",
+        "tarea",
+        "responsable",
+        "estado",
+        "prioridad",
+        "fecha_compromiso",
+        "avance",
+        "Observación"
+    ]
+    
+    df = df[[col for col in columnas_mostrar if col in df.columns]]
+    
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
