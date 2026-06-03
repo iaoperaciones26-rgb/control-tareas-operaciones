@@ -470,6 +470,9 @@ if st.session_state["modal_open"]:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
+        st.markdown("### 📝 Observación")
+        obs = st.text_area("Ingrese observación (obligatoria)")
+
     # 💾 GUARDAR CAMBIOS (ACTUALIZADO)
     if st.button("💾 Guardar cambios"):
 
