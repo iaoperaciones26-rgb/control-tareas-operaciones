@@ -201,7 +201,7 @@ if st.session_state["form"]:
         if st.form_submit_button("Guardar"):
             nuevo_id = f"OPE{len(df)+1:05d}"
 
-           ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
             sheet.append_row([
                 nuevo_id,
