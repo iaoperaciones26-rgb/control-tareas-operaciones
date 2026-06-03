@@ -104,6 +104,9 @@ if "tarea_sel" not in st.session_state:
 if "modal_open" not in st.session_state:
     st.session_state["modal_open"] = False
 
+if "abrir_desde_lista" not in st.session_state:
+    st.session_state["abrir_desde_lista"] = False
+
 # =============================
 # FUNCIONES
 # =============================
@@ -417,19 +420,17 @@ else:
     )
 
     selected = grid_response["selected_rows"]
-    
+
     if selected is not None and len(selected) > 0:
     
         fila = selected.iloc[0]
     
-        # 🔥 ABRIR SI:
-        # 1. está cerrado
-        # 2. o es otra tarea
-        if (not st.session_state.get("modal_open", False)) or \
-           (st.session_state.get("tarea_sel") != fila["id"]):
+        # 🔥 SOLO abrir si se hace click NUEVO
+        if not st.session_state.get("abrir_desde_lista", False):
     
             st.session_state["tarea_sel"] = fila["id"]
             st.session_state["modal_open"] = True
+            st.session_state["abrir_desde_lista"] = True
 
 # =============================
 # DETALLE
