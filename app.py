@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (COMPACTO FINAL)
+# KANBAN (COMPACTO CORREGIDO)
 # =============================
 if vista == "📌 Kanban":
 
@@ -323,38 +323,25 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 🧩 CARD
+                # 🧩 CARD (SIN HTML COMPLEJO)
                 st.markdown(f"""
                 <div style="
-                    border-left:6px solid {color};
-                    background:#1e1e1e;
-                    padding:10px;
-                    border-radius:10px;
-                    margin-bottom:8px;
-                    font-size:13px;
+                    border-left:5px solid {color};
+                    background-color:#262730;
+                    padding:8px;
+                    border-radius:8px;
+                    margin-bottom:6px;
                     color:white;
+                    font-size:13px;
                 ">
-
-                    <b>{row['id']} | {row['tarea']}</b>
-
-                    <div style="margin-top:4px;">
-                        👤 {row['responsable']}
-                    </div>
-
-                    <div>
-                        📅 {row['fecha_compromiso']}
-                    </div>
-
-                    <div style="margin-top:6px; font-size:12px; opacity:0.9;">
-                        📊 {row['avance']}% &nbsp;&nbsp;
-                        ⏱ {row['tiempo_etapa_dias']}d &nbsp;&nbsp;
-                        ⏳ {row['tiempo_total_dias']}d
-                    </div>
-
+                    <b>{row['id']} | {row['tarea']}</b><br>
+                    👤 {row['responsable']}<br>
+                    📅 {row['fecha_compromiso']}<br>
+                    📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🔘 BOTONES
+                # 🔘 BOTONES MÁS VISIBLES
                 colA, colB, colC = st.columns([1,1,1])
 
                 # ⬅️
