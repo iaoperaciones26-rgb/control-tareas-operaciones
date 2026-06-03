@@ -633,13 +633,13 @@ if st.session_state["vista"] == "detalle":
 
         st.success("Cambios guardados")
 
-        st.session_state["modal_open"] = False
+        st.session_state["vista"] = "principal"
         st.session_state["refresh_key"] += 1
         st.rerun()
 
     # ❌ CERRAR
     if cerrar:
-        st.session_state["modal_open"] = False
+        st.session_state["vista"] = "principal"
         st.rerun()
 
     # 📜 HISTORIAL
