@@ -302,22 +302,9 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (PRO FINAL)
+# KANBAN (FINAL ESTABLE PRO)
 # =============================
 if vista == "📌 Kanban":
-
-    # 🎨 ESTILO HOVER
-    st.markdown("""
-    <style>
-    .card-kanban {
-        transition: all 0.2s ease-in-out;
-    }
-    .card-kanban:hover {
-        transform: scale(1.02);
-        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     cols = st.columns(len(estados))
 
@@ -341,62 +328,45 @@ if vista == "📌 Kanban":
                 if len(tarea_txt) > 35:
                     tarea_txt = tarea_txt[:35] + "..."
 
-                # 👤 BADGE INICIALES
+                # 👤 INICIALES
                 nombre = row["responsable"]
                 iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
 
-                # 🧩 CARD
-                st.markdown(f"""
-                <div class="card-kanban" style="
-                    border-left:5px solid {color};
-                    background-color:#262730;
-                    padding:8px;
-                    border-radius:8px;
-                    margin-bottom:6px;
-                    color:white;
-                    font-size:13px;
-                ">
+                # 🧩 CARD (SIN HTML COMPLEJO)
+                with st.container():
 
-                    <b>{row['id']} | {tarea_txt}</b><br>
+                    st.markdown(
+                        f"<div style='border-left:5px solid {color}; padding-left:8px; margin-bottom:6px;'>",
+                        unsafe_allow_html=True
+                    )
 
-                    <span style="font-size:12px;">
-                        <span style="
-                            background:#444;
-                            padding:2px 6px;
-                            border-radius:6px;
-                            margin-right:6px;
-                            font-weight:bold;
-                        ">
-                            {iniciales}
-                        </span>
-                        {nombre}
-                    </span><br>
+                    st.markdown(f"**{row['id']} | {tarea_txt}**")
 
-                    <span style="font-size:12px;">
-                        📅 {row['fecha_compromiso']}
-                    </span><br>
+                    st.markdown(f"👤 **[{iniciales}]** {nombre}")
 
-                    <span style="font-size:12px; opacity:0.9;">
-                        📊 {row['avance']}% | 
-                        ⏱ {row['tiempo_etapa_dias']}d | 
-                        ⏳ {row['tiempo_total_dias']}d
-                    </span>
+                    st.markdown(f"📅 {row['fecha_compromiso']}")
 
-                </div>
-                """, unsafe_allow_html=True)
+                    st.markdown(
+                        f"📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d"
+                    )
+
+                    st.markdown("</div>", unsafe_allow_html=True)
 
                 # 🔘 BOTONES
                 colA, colB, colC = st.columns([1,1,1])
 
+                # ⬅️
                 if i > 0:
                     if colA.button("⬅️", key=f"back_{row['id']}"):
                         actualizar_estado(row["id"], estados[i-1])
                         st.rerun()
 
+                # 👁 DETALLE
                 if colB.button("👁", key=f"view_{row['id']}"):
                     st.session_state["tarea_sel"] = row["id"]
                     st.session_state["modal_open"] = True
 
+                # ➡️
                 if i < len(estados)-1:
                     if colC.button("➡️", key=f"next_{row['id']}"):
                         actualizar_estado(row["id"], estados[i+1])
