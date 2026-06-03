@@ -445,7 +445,7 @@ if st.session_state["modal_open"]:
 
     with col1:
         tarea_edit = st.text_input("Tarea", t["tarea"])
-        # Convertir texto guardado a lista
+
         responsables_actuales = [r.strip() for r in t["responsable"].split(",") if r.strip()]
 
         responsable_edit = st.multiselect(
@@ -453,6 +453,8 @@ if st.session_state["modal_open"]:
             responsables_lista,
             default=responsables_actuales
         )
+
+        # 🔥 ESTADO AUTOMÁTICO
         nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
         st.info(f"Estado a guardar: {nuevo_estado}")
 
@@ -468,33 +470,40 @@ if st.session_state["modal_open"]:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
-    # 💾 GUARDAR CAMBIOS
+    # 💾 GUARDAR CAMBIOS (ACTUALIZADO)
     if st.button("💾 Guardar cambios"):
+
+        nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
 
         df_local = cargar_datos(st.session_state["refresh_key"])
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
+        # 🔹 Actualizar datos principales
         sheet.update(f"A{fila_index}:G{fila_index}", [[
             t["id"],
             tarea_edit,
             ", ".join(responsable_edit),
-            estado_edit,
+            nuevo_estado,
             prioridad_edit,
             t["fecha_creacion"],
             str(fecha_edit)
         ]])
 
-        registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
+        # 🔹 Actualizar estado + fecha etapa + bitácora
+        actualizar_estado(t["id"], nuevo_estado)
+
         st.success("Cambios guardados")
 
+        # 🔹 Cerrar automático
+        st.session_state["modal_open"] = False
         st.session_state["refresh_key"] += 1
         st.rerun()
 
-    # ❌ CERRAR
+    # ❌ CERRAR (puedes dejarlo por ahora)
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
 
-    # 📝 OBSERVACIONES
+    # 📝 OBSERVACIONES (AÚN SIN INTEGRAR)
     st.markdown("### 📝 Observación")
 
     obs = st.text_input("Nueva observación")
