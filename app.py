@@ -489,16 +489,17 @@ if st.session_state["modal_open"]:
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
         # 🔹 Actualizar datos principales
-        sheet.update(f"A{fila_index}:G{fila_index}", [[
+        sheet.update(f"A{fila_index}:H{fila_index}", [[
             t["id"],
             tarea_edit,
             ", ".join(responsable_edit),
             nuevo_estado,
             prioridad_edit,
             t["fecha_creacion"],
-            str(fecha_edit)
+            str(fecha_edit),
+            obs  # 👈 AQUÍ SE GUARDA LA ÚLTIMA OBSERVACIÓN
         ]])
-
+        
         # 🔹 Actualizar estado (ya registra "Cambio a ...")
         actualizar_estado(t["id"], nuevo_estado)
 
