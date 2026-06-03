@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (COMPACTO)
+# KANBAN (COMPACTO FINAL)
 # =============================
 if vista == "📌 Kanban":
 
@@ -323,31 +323,38 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
+                # 🧩 CARD
                 st.markdown(f"""
                 <div style="
                     border-left:6px solid {color};
-                    background:#f8f9fa;
+                    background:#1e1e1e;
                     padding:10px;
                     border-radius:10px;
-                    margin-bottom:10px;
+                    margin-bottom:8px;
                     font-size:13px;
+                    color:white;
                 ">
 
-                    <b>{row['id']} | {row['tarea']}</b><br>
+                    <b>{row['id']} | {row['tarea']}</b>
 
-                    👤 {row['responsable']}<br>
-                    📅 {row['fecha_compromiso']}<br>
+                    <div style="margin-top:4px;">
+                        👤 {row['responsable']}
+                    </div>
 
-                    <div style="margin-top:5px;">
-                        📊 {row['avance']}% |
-                        ⏱ {row['tiempo_etapa_dias']}d |
+                    <div>
+                        📅 {row['fecha_compromiso']}
+                    </div>
+
+                    <div style="margin-top:6px; font-size:12px; opacity:0.9;">
+                        📊 {row['avance']}% &nbsp;&nbsp;
+                        ⏱ {row['tiempo_etapa_dias']}d &nbsp;&nbsp;
                         ⏳ {row['tiempo_total_dias']}d
                     </div>
 
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🔘 BOTONES MÁS LIMPIOS
+                # 🔘 BOTONES
                 colA, colB, colC = st.columns([1,1,1])
 
                 # ⬅️
