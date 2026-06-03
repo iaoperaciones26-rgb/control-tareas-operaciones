@@ -539,12 +539,63 @@ if st.session_state["modal_open"]:
         
         # 🔹 Solo actualizar si cambia el estado
         if nuevo_estado != estado_anterior:
-            actualizar_estado(t["id"], nuevo_estado)
-        
-            registrar_bitacora(
-                t["id"],
-                f"{nuevo_estado} | {obs}"
-            )
+            estado_anterior = t["estado"]
+            
+            # 🧠 DETECTAR CAMBIOS
+            cambios = []
+            
+            # 📅 Fecha compromiso
+            fecha_anterior = str(t["fecha_compromiso"])
+            fecha_nueva = str(fecha_edit)
+            
+            if fecha_anterior != fecha_nueva:
+                cambios.append(f"Se cambia fecha compromiso de {fecha_anterior} a {fecha_nueva}")
+            
+            # ⭐ Prioridad
+            if t["prioridad"] != prioridad_edit:
+                cambios.append(f"Se cambia prioridad de {t['prioridad']} a {prioridad_edit}")
+            
+            # 👤 Responsables
+            resp_anterior = set([r.strip() for r in t["responsable"].split(",") if r.strip()])
+            resp_nuevo = set(responsable_edit)
+            
+            if resp_anterior != resp_nuevo:
+                agregados = resp_nuevo - resp_anterior
+                quitados = resp_anterior - resp_nuevo
+            
+                if agregados:
+                    cambios.append(f"Se agregan responsables: {', '.join(agregados)}")
+                if quitados:
+                    cambios.append(f"Se eliminan responsables: {', '.join(quitados)}")
+            
+            # 🔹 Construir detalle final
+            detalle = []
+            
+            if cambios:
+                detalle.extend(cambios)
+            
+            if obs.strip():
+                detalle.append(obs)
+            
+            detalle_final = " | ".join(detalle)
+            
+            # 🔹 SI CAMBIA ESTADO
+            if nuevo_estado != estado_anterior:
+            
+                actualizar_estado(t["id"], nuevo_estado)
+            
+                registrar_bitacora(
+                    t["id"],
+                    f"{nuevo_estado} | {detalle_final}" if detalle_final else nuevo_estado
+                )
+            
+            # 🔹 SI NO CAMBIA ESTADO
+            else:
+            
+                registrar_bitacora(
+                    t["id"],
+                    detalle_final if detalle_final else f"{estado_anterior} | Sin cambios relevantes"
+                )
         else:
             # 🔹 Solo registrar observación (sin cambio de estado)
             registrar_bitacora(
