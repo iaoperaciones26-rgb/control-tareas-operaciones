@@ -365,8 +365,33 @@ if st.session_state["modal_open"]:
 
     t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-    st.write(f"⏱ Tiempo en etapa: {t['tiempo_etapa_dias']} días")
-    st.write(f"⏳ Tiempo total: {t['tiempo_total_dias']} días")
+st.markdown(f"### ⏱ Indicadores de tiempo")
+
+# 🎯 BONUS: color dinámico según tiempo
+color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
+color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
+
+col_t1, col_t2 = st.columns(2)
+
+with col_t1:
+    st.markdown(f"""
+    <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+        <b>⏱ Tiempo en etapa</b><br>
+        <span style="font-size:22px;color:{color_etapa}">
+            {t['tiempo_etapa_dias']} días
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col_t2:
+    st.markdown(f"""
+    <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+        <b>⏳ Tiempo total</b><br>
+        <span style="font-size:22px;color:{color_total}">
+            {t['tiempo_total_dias']} días
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
 
