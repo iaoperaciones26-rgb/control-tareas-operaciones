@@ -316,7 +316,8 @@ if st.session_state["form"]:
 # KANBAN (COMPACTO FINAL LIMPIO)
 # =============================
 if vista == "📌 Kanban":
-
+if df.empty:
+    st.warning("No hay tareas para mostrar en el tablero")
     cols = st.columns(len(estados))
 
     for i, estado in enumerate(estados):
