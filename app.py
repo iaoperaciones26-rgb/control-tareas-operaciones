@@ -455,7 +455,7 @@ if st.session_state["modal_open"]:
         sheet.update(f"A{fila_index}:G{fila_index}", [[
             t["id"],
             tarea_edit,
-            responsable_edit,
+            ", ".join(responsable_edit),
             estado_edit,
             prioridad_edit,
             t["fecha_creacion"],
