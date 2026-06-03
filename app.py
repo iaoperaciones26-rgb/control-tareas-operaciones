@@ -502,19 +502,7 @@ if st.session_state["modal_open"]:
     # ❌ CERRAR (puedes dejarlo por ahora)
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
-
-    # 📝 OBSERVACIONES (AÚN SIN INTEGRAR)
-    st.markdown("### 📝 Observación")
-
-    obs = st.text_input("Nueva observación")
-
-    if st.button("Guardar observación"):
-        registrar_bitacora(t["id"], obs)
-        st.success("Guardado")
-
-        st.session_state["refresh_key"] += 1
-        st.rerun()
-
+  
     # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
 
