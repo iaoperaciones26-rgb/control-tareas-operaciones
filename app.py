@@ -459,7 +459,8 @@ if st.session_state["modal_open"]:
             responsables_lista,
             default=responsables_actuales
         )
-        estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
+        nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
+        st.info(f"Estado a guardar: {nuevo_estado}")
 
     with col2:
         prioridad_edit = st.selectbox(
