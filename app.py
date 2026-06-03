@@ -364,19 +364,25 @@ if vista == "📌 Kanban":
                     # 🔘 BOTONES
                     colA, colB, colC = st.columns([1,1,1])
 
+                    # ⬅️
                     if i > 0:
                         if colA.button("⬅️", key=f"back_{row['id']}"):
-                            actualizar_estado(row["id"], estados[i-1])
-                            st.rerun()
-
+                            st.session_state["tarea_sel"] = row["id"]
+                            st.session_state["modal_open"] = True
+                            st.session_state["estado_objetivo"] = estados[i-1]
+                    
+                    # 👁
                     if colB.button("👁", key=f"view_{row['id']}"):
                         st.session_state["tarea_sel"] = row["id"]
                         st.session_state["modal_open"] = True
-
+                        st.session_state["estado_objetivo"] = row["estado"]
+                    
+                    # ➡️
                     if i < len(estados)-1:
                         if colC.button("➡️", key=f"next_{row['id']}"):
-                            actualizar_estado(row["id"], estados[i+1])
-                            st.rerun()
+                            st.session_state["tarea_sel"] = row["id"]
+                            st.session_state["modal_open"] = True
+                            st.session_state["estado_objetivo"] = estados[i+1]
                         
 # =============================
 # LISTA
