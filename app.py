@@ -481,6 +481,13 @@ if st.session_state["modal_open"]:
     st.markdown("### 📜 Historial")
 
     logs = pd.DataFrame(log_sheet.get_all_records())
-    hist = logs[logs.iloc[:,0] == t["id"]]
 
-    st.dataframe(hist if not hist.empty else pd.DataFrame())
+    if not logs.empty:
+        logs.columns = ["ID", "Fecha / Hora", "Detalle"]
+
+    hist = logs[logs["ID"] == t["id"]]
+
+    st.dataframe(
+        hist.reset_index(drop=True),
+        use_container_width=True
+    )
