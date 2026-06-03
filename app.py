@@ -454,7 +454,7 @@ else:
 # =============================
 # DETALLE
 # =============================
-if st.session_state["modal_open"]:
+if st.session_state["vista"] == "detalle":
 
     st.markdown("---")
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
