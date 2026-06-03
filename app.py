@@ -323,9 +323,18 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 🧩 CARD (SIN HTML COMPLEJO)
+                # 📌 TRUNCAR TEXTO
+                tarea_txt = row["tarea"]
+                if len(tarea_txt) > 35:
+                    tarea_txt = tarea_txt[:35] + "..."
+                
+                # 👤 BADGE INICIALES
+                nombre = row["responsable"]
+                iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
+                
+                # 🧩 CARD (MISMO DISEÑO + MEJORAS)
                 st.markdown(f"""
-                <div style="
+                <div class="card-kanban" style="
                     border-left:5px solid {color};
                     background-color:#262730;
                     padding:8px;
@@ -334,10 +343,26 @@ if vista == "📌 Kanban":
                     color:white;
                     font-size:13px;
                 ">
-                    <b>{row['id']} | {row['tarea']}</b><br>
-                    👤 {row['responsable']}<br>
+                
+                    <b>{row['id']} | {tarea_txt}</b><br>
+                
+                    <span style="font-size:12px;">
+                        <span style="
+                            background:#444;
+                            padding:2px 6px;
+                            border-radius:6px;
+                            margin-right:6px;
+                            font-weight:bold;
+                        ">
+                            {iniciales}
+                        </span>
+                        {nombre}
+                    </span><br>
+                
                     📅 {row['fecha_compromiso']}<br>
+                
                     📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
+                
                 </div>
                 """, unsafe_allow_html=True)
 
