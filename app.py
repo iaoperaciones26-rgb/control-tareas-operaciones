@@ -10,38 +10,6 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
-# DASHBOARD KPIs
-# =============================
-if not df.empty:
-
-    hoy = pd.to_datetime(datetime.now())
-
-    # 📊 Avance general
-    avance_general = int(df["avance"].mean())
-
-    # ⚠️ Tareas vencidas
-    df["fecha_compromiso_dt"] = pd.to_datetime(df["fecha_compromiso"], errors="coerce")
-    vencidas = df[
-        (df["fecha_compromiso_dt"] < hoy) &
-        (df["estado"] != "FINALIZADO")
-    ].shape[0]
-
-    # 🔄 Tareas en proceso
-    en_proceso = df[
-        df["estado"].isin(["EN PROCESO","EN REVISION","REVISION FINAL"])
-    ].shape[0]
-
-    # 🔥 Alta prioridad
-    alta = df[df["prioridad"] == "Alta"].shape[0]
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric("📊 Avance general", f"{avance_general}%")
-    col2.metric("⚠️ Vencidas", vencidas, delta="Crítico" if vencidas > 0 else "OK")
-    col3.metric("🔄 En proceso", en_proceso)
-    col4.metric("🔥 Alta prioridad", alta)
-
-# =============================
 # ESTILO TARJETAS + HOVER
 # =============================
 st.markdown("""
@@ -261,13 +229,39 @@ df = calcular_tiempos(df)
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
-if filtro:
-    filtro_lower = filtro.lower()
-    df = df[
-        df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
-        df["responsable"].str.lower().str.contains(filtro_lower, na=False)
-    ]
+# =============================
+# DASHBOARD KPIs
+# =============================
 
+if not df.empty:
+
+    hoy = pd.to_datetime(datetime.now())
+
+    # 📊 Avance general
+    avance_general = int(df["avance"].mean())
+
+    # ⚠️ Tareas vencidas
+    df["fecha_compromiso_dt"] = pd.to_datetime(df["fecha_compromiso"], errors="coerce")
+    vencidas = df[
+        (df["fecha_compromiso_dt"] < hoy) &
+        (df["estado"] != "FINALIZADO")
+    ].shape[0]
+
+    # 🔄 Tareas en proceso
+    en_proceso = df[
+        df["estado"].isin(["EN PROCESO","EN REVISION","REVISION FINAL"])
+    ].shape[0]
+
+    # 🔥 Alta prioridad
+    alta = df[df["prioridad"] == "Alta"].shape[0]
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("📊 Avance general", f"{avance_general}%")
+    col2.metric("⚠️ Vencidas", vencidas, delta="Crítico" if vencidas > 0 else "OK")
+    col3.metric("🔄 En proceso", en_proceso)
+    col4.metric("🔥 Alta prioridad", alta)
+    
 # =============================
 # FORMULARIO
 # =============================
@@ -397,34 +391,35 @@ if st.session_state["modal_open"]:
 
     t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
-st.markdown(f"### ⏱ Indicadores de tiempo")
+    # 🔥 INDICADORES VISUALES
+    st.markdown(f"### ⏱ Indicadores de tiempo")
 
-# 🎯 BONUS: color dinámico según tiempo
-color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
-color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
+    color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
+    color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
 
-col_t1, col_t2 = st.columns(2)
+    col_t1, col_t2 = st.columns(2)
 
-with col_t1:
-    st.markdown(f"""
-    <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
-        <b>⏱ Tiempo en etapa</b><br>
-        <span style="font-size:22px;color:{color_etapa}">
-            {t['tiempo_etapa_dias']} días
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+    with col_t1:
+        st.markdown(f"""
+        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+            <b>⏱ Tiempo en etapa</b><br>
+            <span style="font-size:22px;color:{color_etapa}">
+                {t['tiempo_etapa_dias']} días
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 
-with col_t2:
-    st.markdown(f"""
-    <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
-        <b>⏳ Tiempo total</b><br>
-        <span style="font-size:22px;color:{color_total}">
-            {t['tiempo_total_dias']} días
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+    with col_t2:
+        st.markdown(f"""
+        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+            <b>⏳ Tiempo total</b><br>
+            <span style="font-size:22px;color:{color_total}">
+                {t['tiempo_total_dias']} días
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
 
+    # 🔧 FORMULARIO
     col1, col2 = st.columns(2)
 
     with col1:
@@ -444,6 +439,7 @@ with col_t2:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
+    # 💾 GUARDAR CAMBIOS
     if st.button("💾 Guardar cambios"):
 
         df_local = cargar_datos(st.session_state["refresh_key"])
@@ -463,12 +459,13 @@ with col_t2:
         st.success("Cambios guardados")
 
         st.session_state["refresh_key"] += 1
-
         st.rerun()
 
+    # ❌ CERRAR
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
 
+    # 📝 OBSERVACIONES
     st.markdown("### 📝 Observación")
 
     obs = st.text_input("Nueva observación")
@@ -478,9 +475,9 @@ with col_t2:
         st.success("Guardado")
 
         st.session_state["refresh_key"] += 1
-
         st.rerun()
 
+    # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
 
     logs = pd.DataFrame(log_sheet.get_all_records())
