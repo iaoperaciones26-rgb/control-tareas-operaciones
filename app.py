@@ -209,8 +209,11 @@ if st.session_state["form"]:
                 str(fecha)
             ])
 
-            registrar_bitacora(nuevo_id,"Creación")
-            st.session_state["form"]=False
+            registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
+            st.success("Cambios guardados")
+
+            st.session_state["refresh_key"] += 1
+
             st.rerun()
 
 # =============================
@@ -342,9 +345,11 @@ if st.session_state["modal_open"]:
 
         registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
         st.success("Cambios guardados")
-        st.cache_data.clear()
-        st.rerun()
 
+        st.session_state["refresh_key"] += 1
+
+        st.rerun()
+        
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
 
