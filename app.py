@@ -494,25 +494,31 @@ if st.session_state["modal_open"]:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
-        # 🔥 OBSERVACIÓN INTEGRADA
+        # 🔥 OBSERVACIÓN
         st.markdown("### 📝 Observación")
         obs = st.text_area("Ingrese observación (obligatoria)")
 
-    # 💾 GUARDAR CAMBIOS (FINAL)
-    if st.button("💾 Guardar cambios"):
+    # 🔘 BOTONES MEJORADOS
+    col_btn1, col_btn2 = st.columns(2)
 
-        # 🔴 VALIDAR OBSERVACIÓN
+    with col_btn1:
+        guardar = st.button("💾 Guardar cambios", use_container_width=True)
+
+    with col_btn2:
+        cerrar = st.button("❌ Cerrar", use_container_width=True)
+
+    # 💾 GUARDAR CAMBIOS
+    if guardar:
+
         if not obs.strip():
             st.warning("⚠️ Debes ingresar una observación antes de continuar")
             st.stop()
 
-        # 🔹 Estado automático
         nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
 
         df_local = cargar_datos(st.session_state["refresh_key"])
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
-        # 🔹 Actualizar datos principales
         sheet.update(f"A{fila_index}:H{fila_index}", [[
             t["id"],
             tarea_edit,
@@ -521,13 +527,11 @@ if st.session_state["modal_open"]:
             prioridad_edit,
             t["fecha_creacion"],
             str(fecha_edit),
-            obs  # 👈 AQUÍ SE GUARDA LA ÚLTIMA OBSERVACIÓN
+            obs
         ]])
-        
-        # 🔹 Actualizar estado (ya registra "Cambio a ...")
+
         actualizar_estado(t["id"], nuevo_estado)
 
-        # 🔥 BITÁCORA COMPLETA
         registrar_bitacora(
             t["id"],
             f"{nuevo_estado} | {obs}"
@@ -535,13 +539,12 @@ if st.session_state["modal_open"]:
 
         st.success("Cambios guardados")
 
-        # 🔹 Cierre automático
         st.session_state["modal_open"] = False
         st.session_state["refresh_key"] += 1
         st.rerun()
 
-    # ❌ CERRAR (opcional)
-    if st.button("❌ Cerrar"):
+    # ❌ CERRAR
+    if cerrar:
         st.session_state["modal_open"] = False
         st.rerun()
 
@@ -550,18 +553,12 @@ if st.session_state["modal_open"]:
     
     logs = pd.DataFrame(log_sheet.get_all_records())
     
-    # 🛑 Caso 1: bitácora completamente vacía
     if logs.empty:
         st.info("📝 Sin historial disponible para esta tarea")
-    
     else:
-        # 🔹 Asegurar estructura de columnas
         logs.columns = ["ID", "Fecha / Hora", "Detalle"]
-    
-        # 🔹 Filtrar por tarea
         hist = logs[logs["ID"] == t["id"]]
-    
-        # 🛑 Caso 2: tarea sin historial
+
         if hist.empty:
             st.info("📝 Esta tarea aún no tiene historial")
         else:
