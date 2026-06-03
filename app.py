@@ -224,6 +224,8 @@ filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc."
 # =============================
 df = cargar_datos(st.session_state["refresh_key"])
 
+df = calcular_tiempos(df)
+
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
@@ -302,7 +304,9 @@ if vista == "📌 Kanban":
                         👤 {row['responsable']}<br>
                         ⭐ {row['prioridad']}<br>
                         📅 {row['fecha_compromiso']}<br>
-                        📊 {row['avance']}%
+                        📊 {row['avance']}%<br>
+                        ⏱ Etapa: {row['tiempo_etapa_dias']} días<br>
+                        ⏳ Total: {row['tiempo_total_dias']} días
                     </div>
                     """, unsafe_allow_html=True)
 
