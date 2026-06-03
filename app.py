@@ -577,7 +577,7 @@ if st.session_state["modal_open"]:
             if obs.strip():
                 detalle.append(obs)
             
-            detalle_final = " | ".join(detalle)
+            detalle_final = " • ".join(detalle).capitalize()
             
             # 🔹 SI CAMBIA ESTADO
             if nuevo_estado != estado_anterior:
