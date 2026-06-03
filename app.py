@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (COMPACTO CORREGIDO)
+# KANBAN (COMPACTO CORREGIDO FINAL)
 # =============================
 if vista == "📌 Kanban":
 
@@ -328,11 +328,11 @@ if vista == "📌 Kanban":
                 if len(tarea_txt) > 35:
                     tarea_txt = tarea_txt[:35] + "..."
                 
-                # 👤 BADGE INICIALES
+                # 👤 INICIALES
                 nombre = row["responsable"]
                 iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
                 
-                # 🧩 CARD (MISMO DISEÑO + MEJORAS)
+                # 🧩 CARD (SIN HTML PROBLEMÁTICO)
                 st.markdown(f"""
                 <div class="card-kanban" style="
                     border-left:5px solid {color};
@@ -346,18 +346,7 @@ if vista == "📌 Kanban":
                 
                     <b>{row['id']} | {tarea_txt}</b><br>
                 
-                    <span style="font-size:12px;">
-                        <span style="
-                            background:#444;
-                            padding:2px 6px;
-                            border-radius:6px;
-                            margin-right:6px;
-                            font-weight:bold;
-                        ">
-                            {iniciales}
-                        </span>
-                        {nombre}
-                    </span><br>
+                    👤 [{iniciales}] {nombre}<br>
                 
                     📅 {row['fecha_compromiso']}<br>
                 
@@ -366,21 +355,18 @@ if vista == "📌 Kanban":
                 </div>
                 """, unsafe_allow_html=True)
 
-                # 🔘 BOTONES MÁS VISIBLES
+                # 🔘 BOTONES (NO CAMBIAN)
                 colA, colB, colC = st.columns([1,1,1])
 
-                # ⬅️
                 if i > 0:
                     if colA.button("⬅️", key=f"back_{row['id']}"):
                         actualizar_estado(row["id"], estados[i-1])
                         st.rerun()
 
-                # 👁 DETALLE
                 if colB.button("👁", key=f"view_{row['id']}"):
                     st.session_state["tarea_sel"] = row["id"]
                     st.session_state["modal_open"] = True
 
-                # ➡️
                 if i < len(estados)-1:
                     if colC.button("➡️", key=f"next_{row['id']}"):
                         actualizar_estado(row["id"], estados[i+1])
