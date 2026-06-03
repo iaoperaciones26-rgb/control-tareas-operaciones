@@ -139,7 +139,8 @@ def actualizar_estado(id_tarea, nuevo_estado):
 
     fila_excel = fila_index[0] + 2
 
-    sheet.update(f"D{fila_excel}", nuevo_estado)
+    # ✅ CORRECCIÓN AQUÍ
+    sheet.update(f"D{fila_excel}", [[nuevo_estado]])
 
     registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
 
