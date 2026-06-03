@@ -3,7 +3,6 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
-import time
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 st.set_page_config(layout="wide")
@@ -62,7 +61,6 @@ except Exception as e:
     st.error("❌ Error conectando con Google Sheets. Intenta recargar la app.")
     st.stop()
 
-
 # BITÁCORA
 try:
     log_sheet = spreadsheet.worksheet("bitacora")
@@ -119,12 +117,21 @@ def registrar_bitacora(id_tarea, accion):
     st.cache_data.clear()
 
 def actualizar_estado(id_tarea, nuevo_estado):
-    registros = sheet.get_all_records()
-    for i, fila in enumerate(registros):
-        if fila["id"] == id_tarea:
-            time.sleep(0.3)
-            sheet.update_cell(i+2,4,nuevo_estado)
-            break
+
+    df_local = cargar_datos()
+
+    fila_index = df_local.index[df_local["id"] == id_tarea]
+
+    if len(fila_index) == 0:
+        st.error("No se encontró la tarea")
+        return
+
+    fila_excel = fila_index[0] + 2
+
+    sheet.update(f"D{fila_excel}", nuevo_estado)
+
+    registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
+
     st.cache_data.clear()
 
 # =============================
@@ -152,7 +159,7 @@ df = cargar_datos()
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
-# 👉 APLICAR FILTRO
+# FILTRO
 if filtro:
     filtro_lower = filtro.lower()
 
@@ -301,25 +308,23 @@ if st.session_state["modal_open"]:
 
     if st.button("💾 Guardar cambios"):
 
-        registros = sheet.get_all_records()
+        df_local = cargar_datos()
+        fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
-        for i, fila in enumerate(registros):
-            if fila["id"] == t["id"]:
+        sheet.update(f"A{fila_index}:G{fila_index}", [[
+            t["id"],
+            tarea_edit,
+            responsable_edit,
+            estado_edit,
+            prioridad_edit,
+            t["fecha_creacion"],
+            str(fecha_edit)
+        ]])
 
-                sheet.update(f"A{i+2}:G{i+2}", [[
-                    t["id"],
-                    tarea_edit,
-                    responsable_edit,
-                    estado_edit,
-                    prioridad_edit,
-                    t["fecha_creacion"],
-                    str(fecha_edit)
-                ]])
-
-                registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
-                st.success("Cambios guardados")
-                st.cache_data.clear()
-                st.rerun()
+        registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
+        st.success("Cambios guardados")
+        st.cache_data.clear()
+        st.rerun()
 
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
