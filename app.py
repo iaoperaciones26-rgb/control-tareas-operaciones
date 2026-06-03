@@ -365,6 +365,9 @@ if st.session_state["modal_open"]:
 
     t = df[df["id"] == st.session_state["tarea_sel"]].iloc[0]
 
+    st.write(f"⏱ Tiempo en etapa: {t['tiempo_etapa_dias']} días")
+    st.write(f"⏳ Tiempo total: {t['tiempo_total_dias']} días")
+
     col1, col2 = st.columns(2)
 
     with col1:
