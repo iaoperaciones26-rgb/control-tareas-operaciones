@@ -535,12 +535,22 @@ if st.session_state["modal_open"]:
             obs
         ]])
 
-        actualizar_estado(t["id"], nuevo_estado)
-
-        registrar_bitacora(
-            t["id"],
-            f"{nuevo_estado} | {obs}"
-        )
+        estado_anterior = t["estado"]
+        
+        # 🔹 Solo actualizar si cambia el estado
+        if nuevo_estado != estado_anterior:
+            actualizar_estado(t["id"], nuevo_estado)
+        
+            registrar_bitacora(
+                t["id"],
+                f"{nuevo_estado} | {obs}"
+            )
+        else:
+            # 🔹 Solo registrar observación (sin cambio de estado)
+            registrar_bitacora(
+                t["id"],
+                f"{estado_anterior} | {obs}"
+            )
 
         st.success("Cambios guardados")
 
