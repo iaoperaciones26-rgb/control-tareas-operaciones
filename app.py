@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (FINAL SIN HTML)
+# KANBAN (COMPACTO FINAL LIMPIO)
 # =============================
 if vista == "📌 Kanban":
 
@@ -323,35 +323,30 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 📌 TRUNCAR TEXTO
+                # 📌 TRUNCAR SOLO TÍTULO (SIN TOCAR NADA MÁS)
                 tarea_txt = row["tarea"]
                 if len(tarea_txt) > 35:
                     tarea_txt = tarea_txt[:35] + "..."
 
-                # 👤 INICIALES
-                nombre = row["responsable"]
-                iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
+                # 🧩 CARD (TU DISEÑO ORIGINAL)
+                st.markdown(f"""
+                <div style="
+                    border-left:5px solid {color};
+                    background-color:#262730;
+                    padding:8px;
+                    border-radius:8px;
+                    margin-bottom:6px;
+                    color:white;
+                    font-size:13px;
+                ">
+                    <b>{row['id']} | {tarea_txt}</b><br>
+                    👤 {row['responsable']}<br>
+                    📅 {row['fecha_compromiso']}<br>
+                    📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
+                </div>
+                """, unsafe_allow_html=True)
 
-                # 🧩 CARD (SIN HTML)
-                with st.container():
-
-                    st.markdown(f"**{row['id']} | {tarea_txt}**")
-
-                    st.markdown(f"👤 **[{iniciales}]** {nombre}")
-
-                    st.markdown(f"📅 {row['fecha_compromiso']}")
-
-                    st.markdown(
-                        f"📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d"
-                    )
-
-                    # 🎨 Línea lateral simple (truco visual)
-                    st.markdown(
-                        f"<div style='height:4px;background:{color};margin-bottom:6px;border-radius:5px'></div>",
-                        unsafe_allow_html=True
-                    )
-
-                # 🔘 BOTONES
+                # 🔘 BOTONES (IGUAL)
                 colA, colB, colC = st.columns([1,1,1])
 
                 if i > 0:
