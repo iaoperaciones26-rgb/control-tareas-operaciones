@@ -419,10 +419,13 @@ else:
     selected = grid_response["selected_rows"]
 
     if selected is not None and len(selected) > 0:
-        fila = selected.iloc[0]
-        st.session_state["tarea_sel"] = fila["id"]
-        st.session_state["modal_open"] = True
-        st.session_state["estado_objetivo"] = fila["estado"]  # 👈 CLAVE
+    
+        # 🔒 Evitar reapertura automática
+        if not st.session_state.get("modal_open", False):
+    
+            fila = selected.iloc[0]
+            st.session_state["tarea_sel"] = fila["id"]
+            st.session_state["modal_open"] = True
 
 # =============================
 # DETALLE
