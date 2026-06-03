@@ -362,7 +362,7 @@ if vista == "📌 Kanban":
                     """, unsafe_allow_html=True)
 
                     # 🔘 BOTONES
-                    colA, colB, colC = st.columns([1,1,1])
+                    colA, colC = st.columns([1,1])
 
                     # ⬅️
                     if i > 0:
