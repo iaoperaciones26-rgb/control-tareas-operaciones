@@ -621,6 +621,7 @@ if st.session_state["modal_open"]:
     # ❌ CERRAR
     if cerrar:
         st.session_state["modal_open"] = False
+        st.session_state["abrir_desde_lista"] = False  # 🔥 CLAVE
         st.rerun()
 
     # 📜 HISTORIAL
