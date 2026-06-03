@@ -615,6 +615,7 @@ if st.session_state["modal_open"]:
         st.success("Cambios guardados")
 
         st.session_state["modal_open"] = False
+        st.session_state["abrir_desde_lista"] = False  # 🔥 CLAVE
         st.session_state["refresh_key"] += 1
         st.rerun()
 
