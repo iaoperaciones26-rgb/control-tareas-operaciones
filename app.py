@@ -424,7 +424,14 @@ if st.session_state["modal_open"]:
 
     with col1:
         tarea_edit = st.text_input("Tarea", t["tarea"])
-        responsable_edit = st.text_input("Responsables", t["responsable"])
+        # Convertir texto guardado a lista
+        responsables_actuales = [r.strip() for r in t["responsable"].split(",") if r.strip()]
+
+        responsable_edit = st.multiselect(
+            "Responsables",
+            responsables_lista,
+            default=responsables_actuales
+        )
         estado_edit = st.selectbox("Estado", estados, index=estados.index(t["estado"]))
 
     with col2:
