@@ -132,7 +132,23 @@ def actualizar_estado(id_tarea, nuevo_estado):
 
     fila_excel = fila_index[0] + 2
 
+    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Mapeo de columnas (ajusta si cambiaste orden)
+    col_map = {
+        "NUEVO": "H",
+        "EN PROCESO": "I",
+        "EN REVISION": "J",
+        "REVISION FINAL": "K",
+        "FINALIZADO": "L"
+    }
+
+    # 1. Actualizar estado
     sheet.update(f"D{fila_excel}", [[nuevo_estado]])
+
+    # 2. Guardar fecha de etapa
+    if nuevo_estado in col_map:
+        sheet.update(f"{col_map[nuevo_estado]}{fila_excel}", [[ahora]])
 
     registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
 
