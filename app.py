@@ -104,6 +104,10 @@ if "tarea_sel" not in st.session_state:
 if "modal_open" not in st.session_state:
     st.session_state["modal_open"] = False
 
+# 🔁 NUEVO (PASO 1)
+if "vista" not in st.session_state:
+    st.session_state["vista"] = "principal"
+    
 # =============================
 # FUNCIONES
 # =============================
