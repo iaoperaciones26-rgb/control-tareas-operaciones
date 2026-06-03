@@ -156,9 +156,13 @@ def actualizar_estado(id_tarea, nuevo_estado):
     
 def calcular_tiempos(df):
 
+    # 🛑 Si está vacío → no hacer nada
+    if df.empty:
+        return df
+
     ahora = pd.to_datetime(datetime.now())
 
-    # Convertir columnas a datetime
+    # Columnas de fechas
     cols_fechas = [
         "fecha_nuevo",
         "fecha_en_proceso",
@@ -167,32 +171,37 @@ def calcular_tiempos(df):
         "fecha_finalizado"
     ]
 
+    # Convertir solo si existen
     for col in cols_fechas:
         if col in df.columns:
             df[col] = pd.to_datetime(df[col], errors="coerce")
 
-    # ⏱ Tiempo acumulado (desde NUEVO)
+    # 🛑 Validar antes de calcular
+    if "fecha_nuevo" not in df.columns:
+        return df
+
+    # ⏱ Tiempo total
     df["tiempo_total_dias"] = (ahora - df["fecha_nuevo"]).dt.days
 
-    # ⏱ Tiempo por etapa actual
+    # ⏱ Tiempo por etapa
     df["tiempo_etapa_dias"] = 0
 
     for i, row in df.iterrows():
 
         if row["estado"] == "NUEVO":
-            inicio = row["fecha_nuevo"]
+            inicio = row.get("fecha_nuevo")
 
         elif row["estado"] == "EN PROCESO":
-            inicio = row["fecha_en_proceso"]
+            inicio = row.get("fecha_en_proceso")
 
         elif row["estado"] == "EN REVISION":
-            inicio = row["fecha_en_revision"]
+            inicio = row.get("fecha_en_revision")
 
         elif row["estado"] == "REVISION FINAL":
-            inicio = row["fecha_revision_final"]
+            inicio = row.get("fecha_revision_final")
 
         elif row["estado"] == "FINALIZADO":
-            inicio = row["fecha_finalizado"]
+            inicio = row.get("fecha_finalizado")
 
         else:
             inicio = None
