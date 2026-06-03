@@ -12,7 +12,6 @@ st.title("📊 Control Tareas Operaciones")
 # =============================
 # ESTILO TARJETAS + HOVER
 # =============================
-
 st.markdown("""
 <style>
 div.stButton > button {
@@ -41,7 +40,6 @@ div.stButton > button {
 # =============================
 # CONEXIÓN
 # =============================
-
 creds_dict = st.secrets["gcp_service_account"]
 
 scope = [
@@ -62,11 +60,10 @@ try:
 except Exception as e:
     st.error("❌ Error conectando con Google Sheets. Intenta recargar la app.")
     st.stop()
-    
+
 # =============================
 # BITÁCORA
 # =============================
-
 try:
     log_sheet = spreadsheet.worksheet("bitacora")
 except:
@@ -75,15 +72,13 @@ except:
 # =============================
 # CACHE
 # =============================
-
 @st.cache_data(ttl=60)
 def cargar_datos(refresh_key):
     return pd.DataFrame(sheet.get_all_records())
-    
+
 # =============================
 # LISTAS
 # =============================
-
 responsables_lista = [
     "Herman Jaramillo","Simon Gabela","Sandy Perez","Alexis Cevallos",
     "Stalin Villalva","Andres Proaño","Clara Arteaga","Javier Ruiz",
@@ -97,7 +92,6 @@ estados = [
 # =============================
 # SESSION STATE
 # =============================
-
 if "refresh_key" not in st.session_state:
     st.session_state["refresh_key"] = 0
 
@@ -113,7 +107,6 @@ if "modal_open" not in st.session_state:
 # =============================
 # FUNCIONES
 # =============================
-
 def calcular_avance(estado):
     return {
         "NUEVO":0,"EN PROCESO":25,"EN REVISION":50,
@@ -139,17 +132,15 @@ def actualizar_estado(id_tarea, nuevo_estado):
 
     fila_excel = fila_index[0] + 2
 
-    # ✅ CORRECCIÓN AQUÍ
     sheet.update(f"D{fila_excel}", [[nuevo_estado]])
 
     registrar_bitacora(id_tarea, f"Cambio a {nuevo_estado}")
 
     st.session_state["refresh_key"] += 1
-    
+
 # =============================
 # HEADER
 # =============================
-
 col1,col2 = st.columns([1,2])
 
 with col1:
@@ -162,22 +153,18 @@ with col2:
 # =============================
 # FILTRO GLOBAL
 # =============================
-
 filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
 
 # =============================
 # DATA
 # =============================
-
 df = cargar_datos(st.session_state["refresh_key"])
 
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
-# FILTRO
 if filtro:
     filtro_lower = filtro.lower()
-
     df = df[
         df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
         df["responsable"].str.lower().str.contains(filtro_lower, na=False)
@@ -186,7 +173,6 @@ if filtro:
 # =============================
 # FORMULARIO
 # =============================
-
 if st.session_state["form"]:
     with st.form("form_tarea"):
 
@@ -209,17 +195,16 @@ if st.session_state["form"]:
                 str(fecha)
             ])
 
-            registrar_bitacora(t["id"], f"Cambio a {estado_edit}")
-            st.success("Cambios guardados")
+            registrar_bitacora(nuevo_id, "Creación")
 
             st.session_state["refresh_key"] += 1
 
+            st.session_state["form"] = False
             st.rerun()
 
 # =============================
 # KANBAN
 # =============================
-
 if vista == "📌 Kanban":
 
     cols = st.columns(len(estados))
@@ -238,9 +223,7 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                cont = st.container()
-
-                with cont:
+                with st.container():
 
                     st.markdown(f"""
                     <div class="card-kanban">
@@ -276,7 +259,6 @@ if vista == "📌 Kanban":
 # =============================
 # LISTA
 # =============================
-
 else:
 
     st.subheader("📋 Lista de tareas")
@@ -301,7 +283,6 @@ else:
 # =============================
 # DETALLE
 # =============================
-
 if st.session_state["modal_open"]:
 
     st.markdown("---")
@@ -330,7 +311,7 @@ if st.session_state["modal_open"]:
 
     if st.button("💾 Guardar cambios"):
 
-        df_local = cargar_datos()
+        df_local = cargar_datos(st.session_state["refresh_key"])
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
         sheet.update(f"A{fila_index}:G{fila_index}", [[
@@ -349,7 +330,7 @@ if st.session_state["modal_open"]:
         st.session_state["refresh_key"] += 1
 
         st.rerun()
-        
+
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
 
@@ -360,6 +341,9 @@ if st.session_state["modal_open"]:
     if st.button("Guardar observación"):
         registrar_bitacora(t["id"], obs)
         st.success("Guardado")
+
+        st.session_state["refresh_key"] += 1
+
         st.rerun()
 
     st.markdown("### 📜 Historial")
