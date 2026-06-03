@@ -293,7 +293,7 @@ if st.session_state["form"]:
                 nuevo_id,
                 tarea,
                 ", ".join(responsables),
-                estado,
+                "NUEVO",
                 prioridad,
                 ahora,
                 str(fecha),
