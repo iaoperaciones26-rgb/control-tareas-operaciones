@@ -470,12 +470,19 @@ if st.session_state["modal_open"]:
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
+        # 🔥 OBSERVACIÓN INTEGRADA
         st.markdown("### 📝 Observación")
         obs = st.text_area("Ingrese observación (obligatoria)")
 
-    # 💾 GUARDAR CAMBIOS (ACTUALIZADO)
+    # 💾 GUARDAR CAMBIOS (FINAL)
     if st.button("💾 Guardar cambios"):
 
+        # 🔴 VALIDAR OBSERVACIÓN
+        if not obs.strip():
+            st.warning("⚠️ Debes ingresar una observación antes de continuar")
+            st.stop()
+
+        # 🔹 Estado automático
         nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
 
         df_local = cargar_datos(st.session_state["refresh_key"])
@@ -492,20 +499,26 @@ if st.session_state["modal_open"]:
             str(fecha_edit)
         ]])
 
-        # 🔹 Actualizar estado + fecha etapa + bitácora
+        # 🔹 Actualizar estado (ya registra "Cambio a ...")
         actualizar_estado(t["id"], nuevo_estado)
+
+        # 🔥 BITÁCORA COMPLETA
+        registrar_bitacora(
+            t["id"],
+            f"{nuevo_estado} | {obs}"
+        )
 
         st.success("Cambios guardados")
 
-        # 🔹 Cerrar automático
+        # 🔹 Cierre automático
         st.session_state["modal_open"] = False
         st.session_state["refresh_key"] += 1
         st.rerun()
 
-    # ❌ CERRAR (puedes dejarlo por ahora)
+    # ❌ CERRAR (opcional)
     if st.button("Cerrar"):
         st.session_state["modal_open"] = False
-  
+
     # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
 
