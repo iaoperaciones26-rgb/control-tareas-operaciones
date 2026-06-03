@@ -302,7 +302,7 @@ if st.session_state["form"]:
             st.rerun()
 
 # =============================
-# KANBAN (FINAL ESTABLE PRO)
+# KANBAN (COMPACTO CORREGIDO)
 # =============================
 if vista == "📌 Kanban":
 
@@ -323,36 +323,25 @@ if vista == "📌 Kanban":
                     "Baja": "#4CAF50"
                 }.get(row["prioridad"], "#ccc")
 
-                # 📌 TRUNCAR TEXTO
-                tarea_txt = row["tarea"]
-                if len(tarea_txt) > 35:
-                    tarea_txt = tarea_txt[:35] + "..."
-
-                # 👤 INICIALES
-                nombre = row["responsable"]
-                iniciales = "".join([p[0] for p in nombre.split()[:2]]).upper()
-
                 # 🧩 CARD (SIN HTML COMPLEJO)
-                with st.container():
+                st.markdown(f"""
+                <div style="
+                    border-left:5px solid {color};
+                    background-color:#262730;
+                    padding:8px;
+                    border-radius:8px;
+                    margin-bottom:6px;
+                    color:white;
+                    font-size:13px;
+                ">
+                    <b>{row['id']} | {row['tarea']}</b><br>
+                    👤 {row['responsable']}<br>
+                    📅 {row['fecha_compromiso']}<br>
+                    📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d
+                </div>
+                """, unsafe_allow_html=True)
 
-                    st.markdown(
-                        f"<div style='border-left:5px solid {color}; padding-left:8px; margin-bottom:6px;'>",
-                        unsafe_allow_html=True
-                    )
-
-                    st.markdown(f"**{row['id']} | {tarea_txt}**")
-
-                    st.markdown(f"👤 **[{iniciales}]** {nombre}")
-
-                    st.markdown(f"📅 {row['fecha_compromiso']}")
-
-                    st.markdown(
-                        f"📊 {row['avance']}% | ⏱ {row['tiempo_etapa_dias']}d | ⏳ {row['tiempo_total_dias']}d"
-                    )
-
-                    st.markdown("</div>", unsafe_allow_html=True)
-
-                # 🔘 BOTONES
+                # 🔘 BOTONES MÁS VISIBLES
                 colA, colB, colC = st.columns([1,1,1])
 
                 # ⬅️
