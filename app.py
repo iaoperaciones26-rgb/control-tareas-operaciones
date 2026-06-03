@@ -425,8 +425,9 @@ else:
     if selected is not None and len(selected) > 0:
         fila = selected.iloc[0]
         st.session_state["tarea_sel"] = fila["id"]
-        st.session_state["modal_open"] = True
-
+        st.session_state["vista"] = "detalle"
+        st.rerun()
+    
 # =============================
 # DETALLE
 # =============================
