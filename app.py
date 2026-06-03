@@ -417,13 +417,16 @@ else:
     )
 
     selected = grid_response["selected_rows"]
-
+    
     if selected is not None and len(selected) > 0:
     
         fila = selected.iloc[0]
     
-        # 🔒 Solo abrir si es una tarea diferente
-        if st.session_state.get("tarea_sel") != fila["id"]:
+        # 🔥 ABRIR SI:
+        # 1. está cerrado
+        # 2. o es otra tarea
+        if (not st.session_state.get("modal_open", False)) or \
+           (st.session_state.get("tarea_sel") != fila["id"]):
     
             st.session_state["tarea_sel"] = fila["id"]
             st.session_state["modal_open"] = True
