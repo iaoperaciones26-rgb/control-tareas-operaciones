@@ -10,6 +10,38 @@ st.set_page_config(layout="wide")
 st.title("📊 Control Tareas Operaciones")
 
 # =============================
+# DASHBOARD KPIs
+# =============================
+if not df.empty:
+
+    hoy = pd.to_datetime(datetime.now())
+
+    # 📊 Avance general
+    avance_general = int(df["avance"].mean())
+
+    # ⚠️ Tareas vencidas
+    df["fecha_compromiso_dt"] = pd.to_datetime(df["fecha_compromiso"], errors="coerce")
+    vencidas = df[
+        (df["fecha_compromiso_dt"] < hoy) &
+        (df["estado"] != "FINALIZADO")
+    ].shape[0]
+
+    # 🔄 Tareas en proceso
+    en_proceso = df[
+        df["estado"].isin(["EN PROCESO","EN REVISION","REVISION FINAL"])
+    ].shape[0]
+
+    # 🔥 Alta prioridad
+    alta = df[df["prioridad"] == "Alta"].shape[0]
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("📊 Avance general", f"{avance_general}%")
+    col2.metric("⚠️ Vencidas", vencidas)
+    col3.metric("🔄 En proceso", en_proceso)
+    col4.metric("🔥 Alta prioridad", alta)
+
+# =============================
 # ESTILO TARJETAS + HOVER
 # =============================
 st.markdown("""
