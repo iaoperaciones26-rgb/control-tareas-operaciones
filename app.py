@@ -104,9 +104,6 @@ if "tarea_sel" not in st.session_state:
 if "modal_open" not in st.session_state:
     st.session_state["modal_open"] = False
 
-if "abrir_desde_lista" not in st.session_state:
-    st.session_state["abrir_desde_lista"] = False
-
 # =============================
 # FUNCIONES
 # =============================
@@ -422,15 +419,9 @@ else:
     selected = grid_response["selected_rows"]
 
     if selected is not None and len(selected) > 0:
-    
         fila = selected.iloc[0]
-    
-        # 🔥 SOLO abrir si se hace click NUEVO
-        if not st.session_state.get("abrir_desde_lista", False):
-    
-            st.session_state["tarea_sel"] = fila["id"]
-            st.session_state["modal_open"] = True
-            st.session_state["abrir_desde_lista"] = True
+        st.session_state["tarea_sel"] = fila["id"]
+        st.session_state["modal_open"] = True
 
 # =============================
 # DETALLE
@@ -615,14 +606,12 @@ if st.session_state["modal_open"]:
         st.success("Cambios guardados")
 
         st.session_state["modal_open"] = False
-        st.session_state["abrir_desde_lista"] = False  # 🔥 CLAVE
         st.session_state["refresh_key"] += 1
         st.rerun()
 
     # ❌ CERRAR
     if cerrar:
         st.session_state["modal_open"] = False
-        st.session_state["abrir_desde_lista"] = False  # 🔥 CLAVE
         st.rerun()
 
     # 📜 HISTORIAL
