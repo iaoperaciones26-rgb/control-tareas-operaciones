@@ -283,7 +283,6 @@ if st.session_state["form"]:
         responsables = st.multiselect("Responsables",responsables_lista)
         prioridad = st.selectbox("Prioridad",["Alta","Media","Baja"])
         fecha = st.date_input("Fecha compromiso")
-        estado = st.selectbox("Estado",estados)
 
         if st.form_submit_button("Guardar"):
             nuevo_id = f"OPE{len(df)+1:05d}"
