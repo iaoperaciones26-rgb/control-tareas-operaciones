@@ -420,10 +420,11 @@ else:
 
     if selected is not None and len(selected) > 0:
     
-        # 🔒 Evitar reapertura automática
-        if not st.session_state.get("modal_open", False):
+        fila = selected.iloc[0]
     
-            fila = selected.iloc[0]
+        # 🔒 Solo abrir si es una tarea diferente
+        if st.session_state.get("tarea_sel") != fila["id"]:
+    
             st.session_state["tarea_sel"] = fila["id"]
             st.session_state["modal_open"] = True
 
