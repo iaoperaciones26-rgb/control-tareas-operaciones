@@ -422,6 +422,7 @@ else:
         fila = selected.iloc[0]
         st.session_state["tarea_sel"] = fila["id"]
         st.session_state["modal_open"] = True
+        st.session_state["estado_objetivo"] = fila["estado"]  # 👈 CLAVE
 
 # =============================
 # DETALLE
