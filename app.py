@@ -126,7 +126,6 @@ def registrar_bitacora(id_tarea, accion):
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         accion
     ])
-    st.cache_data.clear()
 
 def actualizar_estado(id_tarea, nuevo_estado):
 
