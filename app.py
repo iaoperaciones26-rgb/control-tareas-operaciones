@@ -514,7 +514,7 @@ if st.session_state["modal_open"]:
             st.warning("⚠️ Debes ingresar una observación antes de continuar")
             st.stop()
 
-        nuevo_estado = st.session_state.get("estado_objetivo", t["estado"])
+        nuevo_estado = estado_manual
 
         df_local = cargar_datos(st.session_state["refresh_key"])
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
