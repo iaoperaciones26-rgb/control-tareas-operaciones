@@ -400,6 +400,7 @@ else:
         "responsable",
         "estado",
         "prioridad",
+        "fecha_creacion",
         "fecha_compromiso",
         "avance",
         "Observación"
