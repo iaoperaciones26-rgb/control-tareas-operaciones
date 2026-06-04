@@ -233,6 +233,7 @@ filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc."
 # DATA
 # =============================
 df = cargar_datos(st.session_state["refresh_key"])
+
 if df.empty:
     st.info("📭 No hay tareas registradas aún. Puedes crear una nueva tarea.")
 
@@ -241,6 +242,14 @@ df = calcular_tiempos(df)
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
+# 🔍 FILTRO GLOBAL (tarea + responsable)
+if buscar:
+    buscar_lower = buscar.lower()
+
+    df = df[
+        df["tarea"].str.lower().str.contains(buscar_lower, na=False) |
+        df["responsable"].str.lower().str.contains(buscar_lower, na=False)
+    ]
 # =============================
 # DASHBOARD KPIs
 # =============================
