@@ -14,6 +14,31 @@ st.title("📊 Control Tareas Operaciones")
 # =============================
 st.markdown("""
 <style>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+}
+
+.modal-content {
+    position: fixed;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
 div.stButton > button {
     background-color: transparent;
     border: none;
@@ -427,7 +452,13 @@ else:
 # DETALLE
 # =============================
 if st.session_state["modal_open"]:
+    
+    # 🔲 OVERLAY OSCURO
+    st.markdown('<div class="modal-overlay"></div>', unsafe_allow_html=True)
 
+    # 📦 INICIO MODAL
+    st.markdown('<div class="modal-content">', unsafe_allow_html=True)
+    
     st.markdown("---")
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
@@ -632,3 +663,5 @@ if st.session_state["modal_open"]:
                 hist.reset_index(drop=True),
                 use_container_width=True
             )
+    # 🔚 FIN MODAL
+    st.markdown('</div>', unsafe_allow_html=True)
