@@ -425,7 +425,7 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# DETALLE (MODAL REAL)
+# DETALLE (MODAL HÍBRIDO ANCHO)
 # =============================
 @st.dialog("📌 Detalle de tarea")
 def abrir_detalle():
@@ -437,17 +437,19 @@ def abrir_detalle():
 
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
 
-    # 🔥 INDICADORES VISUALES
+    # =============================
+    # 🔥 KPI (INDICADORES ARRIBA)
+    # =============================
     st.markdown("### ⏱ Indicadores de tiempo")
+
+    col_kpi1, col_kpi2 = st.columns(2)
 
     color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
     color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
 
-    col_t1, col_t2 = st.columns(2)
-
-    with col_t1:
+    with col_kpi1:
         st.markdown(f"""
-        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+        <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
             <b>⏱ Tiempo en etapa</b><br>
             <span style="font-size:22px;color:{color_etapa}">
                 {t['tiempo_etapa_dias']} días
@@ -455,9 +457,9 @@ def abrir_detalle():
         </div>
         """, unsafe_allow_html=True)
 
-    with col_t2:
+    with col_kpi2:
         st.markdown(f"""
-        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+        <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
             <b>⏳ Tiempo total</b><br>
             <span style="font-size:22px;color:{color_total}">
                 {t['tiempo_total_dias']} días
@@ -465,7 +467,11 @@ def abrir_detalle():
         </div>
         """, unsafe_allow_html=True)
 
-    # 🔧 FORMULARIO
+    st.markdown("---")
+
+    # =============================
+    # 🧩 INFORMACIÓN + GESTIÓN
+    # =============================
     col1, col2 = st.columns(2)
 
     with col1:
@@ -499,13 +505,51 @@ def abrir_detalle():
             pd.to_datetime(t["fecha_compromiso"], errors="coerce")
         )
 
-        st.markdown("### 📝 Observación")
-        obs = st.text_area("Ingrese observación (obligatoria)")
+    st.markdown("---")
 
-    # 🔘 BOTONES
+    # =============================
+    # 📝 OBSERVACIÓN (GRANDE)
+    # =============================
+    st.markdown("### 📝 Observación")
+    obs = st.text_area(
+        "Ingrese observación (obligatoria)",
+        height=120
+    )
+
+    st.markdown("---")
+
+    # =============================
+    # 📜 HISTORIAL
+    # =============================
+    st.markdown("### 📜 Historial")
+
+    logs = pd.DataFrame(log_sheet.get_all_records())
+
+    if logs.empty:
+        st.info("📝 Sin historial disponible para esta tarea")
+    else:
+        logs.columns = ["ID", "Fecha / Hora", "Detalle"]
+        hist = logs[logs["ID"] == t["id"]]
+
+        if hist.empty:
+            st.info("📝 Esta tarea aún no tiene historial")
+        else:
+            st.dataframe(
+                hist.reset_index(drop=True),
+                use_container_width=True,
+                height=200
+            )
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # =============================
+    # 💾 BOTÓN CENTRADO
+    # =============================
     guardar = st.button("💾 Guardar cambios", use_container_width=True)
 
-    # 💾 GUARDAR
+    # =============================
+    # 💾 LÓGICA GUARDAR (TUYA)
+    # =============================
     if guardar:
 
         if not obs.strip():
@@ -528,8 +572,6 @@ def abrir_detalle():
             obs
         ]])
 
-        estado_anterior = t["estado"]
-
         registrar_bitacora(
             t["id"],
             f"{nuevo_estado} | {obs}"
@@ -541,27 +583,7 @@ def abrir_detalle():
         st.session_state["refresh_key"] += 1
         st.rerun()
 
-    # 📜 HISTORIAL
-    st.markdown("### 📜 Historial")
 
-    logs = pd.DataFrame(log_sheet.get_all_records())
-
-    if logs.empty:
-        st.info("📝 Sin historial disponible para esta tarea")
-    else:
-        logs.columns = ["ID", "Fecha / Hora", "Detalle"]
-        hist = logs[logs["ID"] == t["id"]]
-
-        if hist.empty:
-            st.info("📝 Esta tarea aún no tiene historial")
-        else:
-            st.dataframe(
-                hist.reset_index(drop=True),
-                use_container_width=True
-            )
-
-
-# 🔥 LLAMADOR DEL MODAL
+# 🔥 LLAMADOR
 if st.session_state["modal_open"]:
     abrir_detalle()
-    
