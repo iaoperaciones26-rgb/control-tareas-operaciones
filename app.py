@@ -547,11 +547,6 @@ def abrir_detalle():
         st.session_state["refresh_key"] += 1
         st.rerun()
 
-    # ❌ CERRAR
-    if cerrar:
-        st.session_state["modal_open"] = False
-        st.rerun()
-
     # 📜 HISTORIAL
     st.markdown("### 📜 Historial")
 
