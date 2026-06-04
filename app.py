@@ -480,7 +480,7 @@ def abrir_detalle():
         <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
             <b style="color:#495057;font-size:14px;">⏳ Tiempo total</b>
             <span style="font-size:22px;color:{color_total}">
-                {t['tiempo_total_dias']} días
+                {0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])} días
             </span>
         </div>
         """, unsafe_allow_html=True)
