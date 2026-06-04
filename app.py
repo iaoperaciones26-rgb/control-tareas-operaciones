@@ -407,6 +407,9 @@ else:
     ]
     
     df = df[[col for col in columnas_mostrar if col in df.columns]]
+
+    if "avance" in df.columns:
+        df["avance"] = df["avance"].apply(lambda x: f"{int(x)}%" if str(x).isdigit() else x)    
     
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_selection(selection_mode="single", use_checkbox=False)
