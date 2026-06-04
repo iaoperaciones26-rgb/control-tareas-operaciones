@@ -468,7 +468,7 @@ def abrir_detalle():
     with col_kpi1:
         st.markdown(f"""
         <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b>⏱ Tiempo en etapa</b><br>
+            <b style="color:#495057;font-size:14px;">⏱ Tiempo en etapa</b>
             <span style="font-size:22px;color:{color_etapa}">
                 {t['tiempo_etapa_dias']} días
             </span>
@@ -478,7 +478,7 @@ def abrir_detalle():
     with col_kpi2:
         st.markdown(f"""
         <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b>⏳ Tiempo total</b><br>
+            <b style="color:#495057;font-size:14px;">⏳ Tiempo total</b>
             <span style="font-size:22px;color:{color_total}">
                 {t['tiempo_total_dias']} días
             </span>
