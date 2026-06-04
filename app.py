@@ -14,30 +14,6 @@ st.title("📊 Control Tareas Operaciones")
 # =============================
 st.markdown("""
 <style>
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
-}
-
-section.main > div:has(div[data-testid="stVerticalBlock"]) > div:nth-child(1) {
-    position: fixed;
-    top: 8%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60%;
-    max-height: 85vh;
-    overflow-y: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    z-index: 1000;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-}
 
 div.stButton > button {
     background-color: transparent;
@@ -449,218 +425,152 @@ else:
         st.session_state["modal_open"] = True
 
 # =============================
-# DETALLE
+# DETALLE (MODAL REAL)
 # =============================
-if st.session_state["modal_open"]:
-    
-    # 🔲 OVERLAY OSCURO
-    st.markdown('<div class="modal-overlay"></div>', unsafe_allow_html=True)
-    modal = st.container()
+@st.dialog("📌 Detalle de tarea")
+def abrir_detalle():
 
-    with modal:
-        
-        st.markdown("---")
-        st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
+    df_full = cargar_datos(st.session_state["refresh_key"])
+    df_full = calcular_tiempos(df_full)
     
-        df_full = cargar_datos(st.session_state["refresh_key"])
-        df_full = calcular_tiempos(df_full)
-        
-        t = df_full[df_full["id"] == st.session_state["tarea_sel"]].iloc[0]
-    
-        # 🔥 INDICADORES VISUALES
-        st.markdown(f"### ⏱ Indicadores de tiempo")
-    
-        color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
-        color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
-    
-        col_t1, col_t2 = st.columns(2)
-    
-        with col_t1:
-            st.markdown(f"""
-            <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
-                <b>⏱ Tiempo en etapa</b><br>
-                <span style="font-size:22px;color:{color_etapa}">
-                    {t['tiempo_etapa_dias']} días
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
-    
-        with col_t2:
-            st.markdown(f"""
-            <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
-                <b>⏳ Tiempo total</b><br>
-                <span style="font-size:22px;color:{color_total}">
-                    {t['tiempo_total_dias']} días
-                </span>
-            </div>
-            """, unsafe_allow_html=True)
-    
-        # 🔧 FORMULARIO
-        col1, col2 = st.columns(2)
-    
-        with col1:
-            tarea_edit = st.text_input("Tarea", t["tarea"])
-    
-            responsables_actuales = [r.strip() for r in t["responsable"].split(",") if r.strip()]
-    
-            responsable_edit = st.multiselect(
-                "Responsables",
-                responsables_lista,
-                default=responsables_actuales
-            )
-    
-            # 🔥 ESTADO AUTOMÁTICO + EDITABLE
-            estado_base = st.session_state.get("estado_objetivo", t["estado"])
-            
-            estado_manual = st.selectbox(
-                "Estado",
-                estados,
-                index=estados.index(estado_base)
-            )
-    
-        with col2:
-            prioridad_edit = st.selectbox(
-                "Prioridad",
-                ["Alta","Media","Baja"],
-                index=["Alta","Media","Baja"].index(t["prioridad"])
-            )
-    
-            fecha_edit = st.date_input(
-                "Fecha compromiso",
-                pd.to_datetime(t["fecha_compromiso"], errors="coerce")
-            )
-    
-            # 🔥 OBSERVACIÓN
-            st.markdown("### 📝 Observación")
-            obs = st.text_area("Ingrese observación (obligatoria)")
-    
-        # 🔘 BOTONES MEJORADOS
-        col_btn1, col_btn2 = st.columns(2)
-    
-        with col_btn1:
-            guardar = st.button("💾 Guardar cambios", use_container_width=True)
-    
-        with col_btn2:
-            cerrar = st.button("❌ Cerrar", use_container_width=True)
-    
-        # 💾 GUARDAR CAMBIOS
-        if guardar:
-    
-            if not obs.strip():
-                st.warning("⚠️ Debes ingresar una observación antes de continuar")
-                st.stop()
-    
-            nuevo_estado = estado_manual
-    
-            df_local = cargar_datos(st.session_state["refresh_key"])
-            fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
-    
-            sheet.update(f"A{fila_index}:H{fila_index}", [[
-                t["id"],
-                tarea_edit,
-                ", ".join(responsable_edit),
-                nuevo_estado,
-                prioridad_edit,
-                t["fecha_creacion"],
-                str(fecha_edit),
-                obs
-            ]])
-    
-            estado_anterior = t["estado"]
-            
-            # 🔹 Solo actualizar si cambia el estado
-            if nuevo_estado != estado_anterior:
-                estado_anterior = t["estado"]
-                
-                # 🧠 DETECTAR CAMBIOS
-                cambios = []
-                
-                # 📅 Fecha compromiso
-                fecha_anterior = str(t["fecha_compromiso"])
-                fecha_nueva = str(fecha_edit)
-                
-                if fecha_anterior != fecha_nueva:
-                    cambios.append(f"Se cambia fecha compromiso de {fecha_anterior} a {fecha_nueva}")
-                
-                # ⭐ Prioridad
-                if t["prioridad"] != prioridad_edit:
-                    cambios.append(f"Se cambia prioridad de {t['prioridad']} a {prioridad_edit}")
-                
-                # 👤 Responsables
-                resp_anterior = set([r.strip() for r in t["responsable"].split(",") if r.strip()])
-                resp_nuevo = set(responsable_edit)
-                
-                if resp_anterior != resp_nuevo:
-                    agregados = resp_nuevo - resp_anterior
-                    quitados = resp_anterior - resp_nuevo
-                
-                    if agregados:
-                        cambios.append(f"Se agregan responsables: {', '.join(agregados)}")
-                    if quitados:
-                        cambios.append(f"Se eliminan responsables: {', '.join(quitados)}")
-                
-                # 🔹 Construir detalle final
-                detalle = []
-                
-                if cambios:
-                    detalle.extend(cambios)
-                
-                if obs.strip():
-                    detalle.append(obs)
-                
-                detalle_final = " • ".join(detalle).capitalize()
-                
-                # 🔹 SI CAMBIA ESTADO
-                if nuevo_estado != estado_anterior:
-                
-                    actualizar_estado(t["id"], nuevo_estado)
-                
-                    registrar_bitacora(
-                        t["id"],
-                        f"{nuevo_estado} | {detalle_final}" if detalle_final else nuevo_estado
-                    )
-                
-                # 🔹 SI NO CAMBIA ESTADO
-                else:
-                
-                    registrar_bitacora(
-                        t["id"],
-                        detalle_final if detalle_final else f"{estado_anterior} | Sin cambios relevantes"
-                    )
-            else:
-                # 🔹 Solo registrar observación (sin cambio de estado)
-                registrar_bitacora(
-                    t["id"],
-                    f"{estado_anterior} | {obs}"
-                )
-    
-            st.success("Cambios guardados")
-    
-            st.session_state["modal_open"] = False
-            st.session_state["refresh_key"] += 1
-            st.rerun()
-    
-        # ❌ CERRAR
-        if cerrar:
-            st.session_state["modal_open"] = False
-            st.rerun()
-    
-        # 📜 HISTORIAL
-        st.markdown("### 📜 Historial")
-        
-        logs = pd.DataFrame(log_sheet.get_all_records())
-        
-        if logs.empty:
-            st.info("📝 Sin historial disponible para esta tarea")
+    t = df_full[df_full["id"] == st.session_state["tarea_sel"]].iloc[0]
+
+    st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
+
+    # 🔥 INDICADORES VISUALES
+    st.markdown("### ⏱ Indicadores de tiempo")
+
+    color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
+    color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
+
+    col_t1, col_t2 = st.columns(2)
+
+    with col_t1:
+        st.markdown(f"""
+        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+            <b>⏱ Tiempo en etapa</b><br>
+            <span style="font-size:22px;color:{color_etapa}">
+                {t['tiempo_etapa_dias']} días
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_t2:
+        st.markdown(f"""
+        <div style="background:#f8f9fa;padding:12px;border-radius:10px;text-align:center">
+            <b>⏳ Tiempo total</b><br>
+            <span style="font-size:22px;color:{color_total}">
+                {t['tiempo_total_dias']} días
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # 🔧 FORMULARIO
+    col1, col2 = st.columns(2)
+
+    with col1:
+        tarea_edit = st.text_input("Tarea", t["tarea"])
+
+        responsables_actuales = [r.strip() for r in t["responsable"].split(",") if r.strip()]
+
+        responsable_edit = st.multiselect(
+            "Responsables",
+            responsables_lista,
+            default=responsables_actuales
+        )
+
+        estado_base = st.session_state.get("estado_objetivo", t["estado"])
+
+        estado_manual = st.selectbox(
+            "Estado",
+            estados,
+            index=estados.index(estado_base)
+        )
+
+    with col2:
+        prioridad_edit = st.selectbox(
+            "Prioridad",
+            ["Alta","Media","Baja"],
+            index=["Alta","Media","Baja"].index(t["prioridad"])
+        )
+
+        fecha_edit = st.date_input(
+            "Fecha compromiso",
+            pd.to_datetime(t["fecha_compromiso"], errors="coerce")
+        )
+
+        st.markdown("### 📝 Observación")
+        obs = st.text_area("Ingrese observación (obligatoria)")
+
+    # 🔘 BOTONES
+    col_btn1, col_btn2 = st.columns(2)
+
+    with col_btn1:
+        guardar = st.button("💾 Guardar cambios", use_container_width=True)
+
+    with col_btn2:
+        cerrar = st.button("❌ Cerrar", use_container_width=True)
+
+    # 💾 GUARDAR
+    if guardar:
+
+        if not obs.strip():
+            st.warning("⚠️ Debes ingresar una observación antes de continuar")
+            st.stop()
+
+        nuevo_estado = estado_manual
+
+        df_local = cargar_datos(st.session_state["refresh_key"])
+        fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
+
+        sheet.update(f"A{fila_index}:H{fila_index}", [[
+            t["id"],
+            tarea_edit,
+            ", ".join(responsable_edit),
+            nuevo_estado,
+            prioridad_edit,
+            t["fecha_creacion"],
+            str(fecha_edit),
+            obs
+        ]])
+
+        estado_anterior = t["estado"]
+
+        registrar_bitacora(
+            t["id"],
+            f"{nuevo_estado} | {obs}"
+        )
+
+        st.success("Cambios guardados")
+
+        st.session_state["modal_open"] = False
+        st.session_state["refresh_key"] += 1
+        st.rerun()
+
+    # ❌ CERRAR
+    if cerrar:
+        st.session_state["modal_open"] = False
+        st.rerun()
+
+    # 📜 HISTORIAL
+    st.markdown("### 📜 Historial")
+
+    logs = pd.DataFrame(log_sheet.get_all_records())
+
+    if logs.empty:
+        st.info("📝 Sin historial disponible para esta tarea")
+    else:
+        logs.columns = ["ID", "Fecha / Hora", "Detalle"]
+        hist = logs[logs["ID"] == t["id"]]
+
+        if hist.empty:
+            st.info("📝 Esta tarea aún no tiene historial")
         else:
-            logs.columns = ["ID", "Fecha / Hora", "Detalle"]
-            hist = logs[logs["ID"] == t["id"]]
-    
-            if hist.empty:
-                st.info("📝 Esta tarea aún no tiene historial")
-            else:
-                st.dataframe(
-                    hist.reset_index(drop=True),
-                    use_container_width=True
-                )
-                
+            st.dataframe(
+                hist.reset_index(drop=True),
+                use_container_width=True
+            )
+
+# 🔥 LLAMADOR DEL MODAL
+if st.session_state["modal_open"]:
+    abrir_detalle()
