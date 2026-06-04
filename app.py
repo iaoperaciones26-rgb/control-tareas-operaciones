@@ -243,12 +243,12 @@ if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
 # 🔍 FILTRO GLOBAL (tarea + responsable)
-if buscar:
-    buscar_lower = buscar.lower()
+if filtro:
+    filtro_lower = filtro.lower()
 
     df = df[
-        df["tarea"].str.lower().str.contains(buscar_lower, na=False) |
-        df["responsable"].str.lower().str.contains(buscar_lower, na=False)
+        df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
+        df["responsable"].str.lower().str.contains(filtro_lower, na=False)
     ]
 # =============================
 # DASHBOARD KPIs
