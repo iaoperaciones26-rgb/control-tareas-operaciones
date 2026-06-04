@@ -503,13 +503,7 @@ def abrir_detalle():
         obs = st.text_area("Ingrese observación (obligatoria)")
 
     # 🔘 BOTONES
-    col_btn1, col_btn2 = st.columns(2)
-
-    with col_btn1:
-        guardar = st.button("💾 Guardar cambios", use_container_width=True)
-
-    with col_btn2:
-        cerrar = st.button("❌ Cerrar", use_container_width=True)
+    guardar = st.button("💾 Guardar cambios", use_container_width=True)
 
     # 💾 GUARDAR
     if guardar:
@@ -545,11 +539,6 @@ def abrir_detalle():
 
         st.session_state["modal_open"] = False
         st.session_state["refresh_key"] += 1
-        st.rerun()
-
-    # ❌ CERRAR
-    if cerrar:
-        st.session_state["modal_open"] = False
         st.rerun()
 
     # 📜 HISTORIAL
