@@ -411,6 +411,11 @@ else:
     if "avance" in df.columns:
         df["avance"] = df["avance"].apply(lambda x: f"{int(x)}%" if str(x).isdigit() else x)    
     
+    # 📅 FORMATEAR FECHAS (SIN HORA)
+    for col in ["fecha_creacion", "fecha_compromiso"]:
+        if col in df.columns:
+            df[col] = pd.to_datetime(df[col], errors="coerce").dt.strftime("%Y-%m-%d")
+    
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_selection(selection_mode="single", use_checkbox=False)
 
