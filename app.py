@@ -468,9 +468,12 @@ def abrir_detalle():
     with col_kpi1:
         st.markdown(f"""
         <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b style="color:#495057;font-size:14px;">⏱ Tiempo en etapa</b>
-            <span style="font-size:22px;color:{color_etapa}">
-                {t['tiempo_etapa_dias']} días
+            <b style="color:#495057;font-size:14px;display:block;margin-bottom:6px;">
+                ⏱ Tiempo en etapa
+            </b>
+            
+            <span style="font-size:24px;font-weight:bold;color:{color_etapa};display:block;">
+                {0 if pd.isna(t['tiempo_etapa_dias']) else int(t['tiempo_etapa_dias'])} días
             </span>
         </div>
         """, unsafe_allow_html=True)
@@ -478,8 +481,11 @@ def abrir_detalle():
     with col_kpi2:
         st.markdown(f"""
         <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b style="color:#495057;font-size:14px;">⏳ Tiempo total</b>
-            <span style="font-size:22px;color:{color_total}">
+            <b style="color:#495057;font-size:14px;display:block;margin-bottom:6px;">
+                ⏳ Tiempo total
+            </b>
+            
+            <span style="font-size:24px;font-weight:bold;color:{color_total};display:block;">
                 {0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])} días
             </span>
         </div>
