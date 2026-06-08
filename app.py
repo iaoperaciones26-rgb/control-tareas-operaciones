@@ -215,7 +215,7 @@ def calcular_tiempos(df):
 # =============================
 # HEADER
 # =============================
-col1,col2 = st.columns([1,2])
+col1, col2 = st.columns([1,2])
 
 with col1:
     if st.button("➕ Nueva tarea"):
@@ -223,6 +223,10 @@ with col1:
 
 with col2:
     vista = st.radio("",["📋 Lista","📌 Kanban"],horizontal=True)
+
+# 🔥 LLAMADOR MODAL CREAR TAREA
+if st.session_state["form"]:
+    abrir_crear_tarea()
 
 # =============================
 # FILTRO GLOBAL
@@ -284,55 +288,71 @@ if not df.empty:
     col4.metric("🔥 Alta prioridad", alta)
     
 # =============================
-# FORMULARIO
+# MODAL CREAR TAREA
 # =============================
-if st.session_state["form"]:
-    with st.form("form_tarea"):
+@st.dialog("🆕 Nueva tarea")
+def abrir_crear_tarea():
 
-        tarea = st.text_input("Tarea")
-        responsables = st.multiselect("Responsables",responsables_lista)
-        prioridad = st.selectbox("Prioridad",["Alta","Media","Baja"])
-        fecha = st.date_input("Fecha compromiso")
+    tarea = st.text_input("Tarea")
 
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            guardar = st.form_submit_button("💾 Guardar")
-        
-        with col2:
-            cancelar = st.form_submit_button("❌ Cancelar")
-        # 💾 GUARDAR
-        if guardar:
-            nuevo_id = f"OPE{len(df)+1:05d}"
-        
-            ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-            sheet.append_row([
-                nuevo_id,
-                tarea,
-                ", ".join(responsables),
-                "NUEVO",
-                prioridad,
-                ahora,
-                str(fecha),
-                ahora,
-                "",
-                "",
-                "",
-                ""
-            ])
-        
-            registrar_bitacora(nuevo_id, "Creación")
-        
-            st.session_state["refresh_key"] += 1
-            st.session_state["form"] = False
-            st.rerun()
-        
-        
-        # ❌ CANCELAR
-        if cancelar:
-            st.session_state["form"] = False
-            st.rerun()    
+    responsables = st.multiselect(
+        "Responsables",
+        responsables_lista
+    )
+
+    prioridad = st.selectbox(
+        "Prioridad",
+        ["Alta","Media","Baja"]
+    )
+
+    fecha = st.date_input("Fecha compromiso")
+
+    # 🔘 BOTONES
+    col1, col2 = st.columns(2)
+
+    with col1:
+        guardar = st.button("💾 Guardar", use_container_width=True)
+
+    with col2:
+        cancelar = st.button("❌ Cancelar", use_container_width=True)
+
+    # 💾 GUARDAR
+    if guardar:
+
+        if not tarea.strip():
+            st.warning("⚠️ Debes ingresar una tarea")
+            st.stop()
+
+        nuevo_id = f"OPE{len(df)+1:05d}"
+        ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        sheet.append_row([
+            nuevo_id,
+            tarea,
+            ", ".join(responsables),
+            "NUEVO",
+            prioridad,
+            ahora,
+            str(fecha),
+            ahora,
+            "",
+            "",
+            "",
+            ""
+        ])
+
+        registrar_bitacora(nuevo_id, "Creación")
+
+        st.session_state["refresh_key"] += 1
+        st.session_state["form"] = False
+
+        st.success("Tarea creada")
+        st.rerun()
+
+    # ❌ CANCELAR
+    if cancelar:
+        st.session_state["form"] = False
+        st.rerun()
 
 # =============================
 # KANBAN (COMPACTO FINAL LIMPIO)
