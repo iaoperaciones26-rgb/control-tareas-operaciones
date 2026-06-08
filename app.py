@@ -238,9 +238,6 @@ def abrir_crear_tarea():
     with col1:
         guardar = st.button("💾 Guardar", use_container_width=True)
 
-    with col2:
-        cancelar = st.button("❌ Cancelar", use_container_width=True)
-
     # 💾 GUARDAR
     if guardar:
 
@@ -273,12 +270,7 @@ def abrir_crear_tarea():
 
         st.success("Tarea creada")
         st.rerun()
-
-    # ❌ CANCELAR
-    if cancelar:
-        st.session_state["form"] = False
-        st.rerun()
-        
+     
 # =============================
 # HEADER
 # =============================
