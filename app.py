@@ -286,6 +286,7 @@ with col2:
 # 🔥 LLAMADOR MODAL CREAR TAREA
 if st.session_state["form"]:
     abrir_crear_tarea()
+    st.session_state["form"] = False  # 🔥 RESET AUTOMÁTICO
 
 # =============================
 # FILTRO GLOBAL
