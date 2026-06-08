@@ -294,11 +294,19 @@ if st.session_state["form"]:
         prioridad = st.selectbox("Prioridad",["Alta","Media","Baja"])
         fecha = st.date_input("Fecha compromiso")
 
-        if st.form_submit_button("Guardar"):
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            guardar = st.form_submit_button("💾 Guardar")
+        
+        with col2:
+            cancelar = st.form_submit_button("❌ Cancelar")
+        # 💾 GUARDAR
+        if guardar:
             nuevo_id = f"OPE{len(df)+1:05d}"
-
+        
             ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+        
             sheet.append_row([
                 nuevo_id,
                 tarea,
@@ -307,19 +315,24 @@ if st.session_state["form"]:
                 prioridad,
                 ahora,
                 str(fecha),
-                ahora,   # fecha_nuevo
-                "",      # fecha_en_proceso
-                "",      # fecha_en_revision
-                "",      # fecha_revision_final
-                ""       # fecha_finalizado
+                ahora,
+                "",
+                "",
+                "",
+                ""
             ])
         
             registrar_bitacora(nuevo_id, "Creación")
-
+        
             st.session_state["refresh_key"] += 1
-
             st.session_state["form"] = False
             st.rerun()
+        
+        
+        # ❌ CANCELAR
+        if cancelar:
+            st.session_state["form"] = False
+            st.rerun()    
 
 # =============================
 # KANBAN (COMPACTO FINAL LIMPIO)
