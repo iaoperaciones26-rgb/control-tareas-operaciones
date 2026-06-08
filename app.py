@@ -5,10 +5,38 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+# 🔥 SIEMPRE PRIMERO
 st.set_page_config(layout="wide")
 
-st.title("📊 Control Tareas Operaciones")
+# =============================
+# LOGIN STATE
+# =============================
+if "login_ok" not in st.session_state:
+    st.session_state["login_ok"] = False
 
+# =============================
+# LOGIN SIMPLE
+# =============================
+if not st.session_state["login_ok"]:
+
+    st.title("🔐 Acceso al sistema")
+
+    password = st.text_input("Ingrese contraseña", type="password")
+
+    if st.button("Ingresar"):
+
+        if password == "OPE2026":
+            st.session_state["login_ok"] = True
+            st.rerun()
+        else:
+            st.error("❌ Contraseña incorrecta")
+
+    st.stop()  # 🔥 bloquea toda la app
+
+# =============================
+# APP PRINCIPAL
+# =============================
+st.title("📊 Control Tareas Operaciones")
 # =============================
 # ESTILO TARJETAS + HOVER
 # =============================
