@@ -631,3 +631,4 @@ def abrir_detalle():
 # 🔥 LLAMADOR
 if st.session_state["modal_open"]:
     abrir_detalle()
+    st.session_state["modal_open"] = False
