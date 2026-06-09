@@ -604,15 +604,27 @@ def abrir_detalle():
     # 📜 HISTORIAL
     # =============================
     st.markdown("### 📜 Historial")
-
+    
     logs = pd.DataFrame(log_sheet.get_all_records())
-
+    
     if logs.empty:
         st.info("📝 Sin historial disponible para esta tarea")
+    
     else:
-        logs.columns = ["ID", "Fecha / Hora", "Detalle"]
+        # 🔒 Asegurar nombres de columnas solo si no vienen correctos
+        expected_cols = ["ID", "Fecha / Hora", "Detalle"]
+    
+        if len(logs.columns) == 3:
+            # Normalizar nombres (por si en Sheet están diferentes)
+            logs.columns = expected_cols
+    
+        else:
+            st.warning("⚠️ Estructura inesperada en bitácora")
+            st.stop()
+    
+        # 🔍 Filtrar por ID
         hist = logs[logs["ID"] == t["id"]]
-
+    
         if hist.empty:
             st.info("📝 Esta tarea aún no tiene historial")
         else:
@@ -621,7 +633,7 @@ def abrir_detalle():
                 use_container_width=True,
                 height=200
             )
-
+    
     st.markdown("<br>", unsafe_allow_html=True)
 
     # =============================
