@@ -323,7 +323,7 @@ if st.session_state["form"]:
 # =============================
 # FILTRO GLOBAL
 # =============================
-filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc.")
+filtro = st.text_input("🔍 Buscar...", placeholder="Tarea o Responsable")
 
 # =============================
 # DATA
