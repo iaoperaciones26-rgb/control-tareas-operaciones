@@ -372,13 +372,6 @@ with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
     if not logs.empty:
         logs.to_excel(writer, index=False, sheet_name='Bitacora')
 
-st.download_button(
-    label="📥 Descargar Excel",
-    data=buffer.getvalue(),
-    file_name=f"control_operaciones_{datetime.now().strftime('%Y%m%d')}.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-)
-
 # =============================
 # DASHBOARD KPIs
 # =============================
@@ -494,7 +487,7 @@ else:
         st.download_button(
             label="📥 Excel",
             data=buffer.getvalue(),
-            file_name=file_name,
+            file_name=f"control_operaciones_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )    
         
