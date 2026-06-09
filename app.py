@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import gspread
+import streamlit.components.v1 as components
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
@@ -510,7 +511,7 @@ def abrir_detalle():
     t = df_full[df_full["id"] == st.session_state["tarea_sel"]].iloc[0]
 
     st.subheader(f"📌 Detalle: {st.session_state['tarea_sel']}")
-
+    
     # =============================
     # 🔥 KPI (INDICADORES ARRIBA)
     # =============================
@@ -525,24 +526,28 @@ def abrir_detalle():
     tiempo_total = 0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])
     
     with col_kpi1:
-        st.markdown(f"""<div style="background:#262730;padding:16px;border-radius:10px;text-align:center;">
-    <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
-    ⏱ Tiempo en etapa
-    </div>
-    <span style="font-size:26px;font-weight:bold;color:{color_etapa};">
-    {tiempo_etapa} días
-    </span>
-    </div>""", unsafe_allow_html=True)
+        components.html(f"""
+        <div style="background:#262730;padding:16px;border-radius:10px;text-align:center;color:white;">
+            <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
+                ⏱ Tiempo en etapa
+            </div>
+            <div style="font-size:26px;font-weight:bold;color:{color_etapa};">
+                {tiempo_etapa} días
+            </div>
+        </div>
+        """, height=120)
     
     with col_kpi2:
-        st.markdown(f"""<div style="background:#262730;padding:16px;border-radius:10px;text-align:center;">
-    <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
-    ⏳ Tiempo total
-    </div>
-    <span style="font-size:26px;font-weight:bold;color:{color_total};">
-    {tiempo_total} días
-    </span>
-    </div>""", unsafe_allow_html=True)
+        components.html(f"""
+        <div style="background:#262730;padding:16px;border-radius:10px;text-align:center;color:white;">
+            <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
+                ⏳ Tiempo total
+            </div>
+            <div style="font-size:26px;font-weight:bold;color:{color_total};">
+                {tiempo_total} días
+            </div>
+        </div>
+        """, height=120)
     
     st.markdown("---")
     
