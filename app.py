@@ -484,8 +484,20 @@ if vista == "📌 Kanban":
 # =============================
 else:
 
-    st.subheader("📋 Lista de tareas")
-    
+    # 🔥 HEADER LISTA + BOTÓN DESCARGA
+    col_title, col_btn = st.columns([4,1])
+
+    with col_title:
+        st.subheader("📋 Lista de tareas")
+
+    with col_btn:
+        st.download_button(
+            label="📥 Excel",
+            data=buffer.getvalue(),
+            file_name=file_name,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )    
+        
     # 📝 Agregar columna visible de observación
     if "ultima_observacion" in df.columns:
         df["Observación"] = df["ultima_observacion"].apply(
