@@ -515,34 +515,69 @@ def abrir_detalle():
     # 🔥 KPI (INDICADORES ARRIBA)
     # =============================
     st.markdown("### ⏱ Indicadores de tiempo")
-
+    
     col_kpi1, col_kpi2 = st.columns(2)
-
+    
     color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
     color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
-
+    
     with col_kpi1:
         st.markdown(f"""
-        <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b>⏱ Tiempo en etapa</b><br>
-            <span style="font-size:22px;color:{color_etapa}">
-                {t['tiempo_etapa_dias']} días
-            </span>
+        <div style="
+            background:#262730;
+            padding:16px;
+            border-radius:10px;
+            text-align:center;
+        ">
+    
+            <div style="
+                color:#adb5bd;
+                font-size:13px;
+                margin-bottom:6px;
+            ">
+                ⏱ Tiempo en etapa
+            </div>
+    
+            <div style="
+                font-size:26px;
+                font-weight:bold;
+                color:{color_etapa};
+            ">
+                {0 if pd.isna(t['tiempo_etapa_dias']) else int(t['tiempo_etapa_dias'])} días
+            </div>
+    
         </div>
         """, unsafe_allow_html=True)
-
+    
     with col_kpi2:
         st.markdown(f"""
-        <div style="background:#f1f3f5;padding:14px;border-radius:10px;text-align:center">
-            <b>⏳ Tiempo total</b><br>
-            <span style="font-size:22px;color:{color_total}">
-                {t['tiempo_total_dias']} días
-            </span>
+        <div style="
+            background:#262730;
+            padding:16px;
+            border-radius:10px;
+            text-align:center;
+        ">
+    
+            <div style="
+                color:#adb5bd;
+                font-size:13px;
+                margin-bottom:6px;
+            ">
+                ⏳ Tiempo total
+            </div>
+    
+            <div style="
+                font-size:26px;
+                font-weight:bold;
+                color:{color_total};
+            ">
+                {0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])} días
+            </div>
+    
         </div>
         """, unsafe_allow_html=True)
-
+    
     st.markdown("---")
-
     # =============================
     # 🧩 INFORMACIÓN + GESTIÓN
     # =============================
