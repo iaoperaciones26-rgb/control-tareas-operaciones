@@ -277,7 +277,15 @@ def abrir_crear_tarea():
             st.warning("⚠️ Debes ingresar una tarea")
             st.stop()
 
-        nuevo_id = f"OPE{len(df)+1:05d}"
+        # 🔥 GENERAR ID CORRECTO (NO DEPENDE DE FILTRO)
+        df_ids = cargar_datos(st.session_state["refresh_key"])
+        
+        if not df_ids.empty:
+            max_id = df_ids["id"].str.replace("OPE", "").astype(int).max()
+            nuevo_id = f"OPE{max_id + 1:05d}"
+        else:
+            nuevo_id = "OPE00001"
+            
         ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         sheet.append_row([
