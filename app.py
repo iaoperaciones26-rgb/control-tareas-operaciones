@@ -328,6 +328,7 @@ filtro = st.text_input("🔍 Buscar...", placeholder="Ej: Martha, Informe, etc."
 # DATA
 # =============================
 df = cargar_datos(st.session_state["refresh_key"])
+df_original = df.copy()
 
 if df.empty:
     st.info("📭 No hay tareas registradas aún. Puedes crear una nueva tarea.")
@@ -337,7 +338,9 @@ df = calcular_tiempos(df)
 if not df.empty:
     df["avance"] = df["estado"].apply(calcular_avance)
 
-# 🔍 FILTRO GLOBAL (tarea + responsable)
+# =============================
+# 🔍 FILTRO GLOBAL
+# =============================
 if filtro:
     filtro_lower = filtro.lower()
 
@@ -345,6 +348,36 @@ if filtro:
         df["tarea"].str.lower().str.contains(filtro_lower, na=False) |
         df["responsable"].str.lower().str.contains(filtro_lower, na=False)
     ]
+
+# =============================
+# 📥 DESCARGA INTELIGENTE
+# =============================
+buffer = io.BytesIO()
+
+logs = pd.DataFrame(log_sheet.get_all_records())
+
+# 🔥 lógica inteligente
+if df.empty and not df_original.empty:
+    descarga_df = df_original
+elif len(df) == len(df_original):
+    descarga_df = df_original
+else:
+    descarga_df = df
+
+with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+    
+    descarga_df.to_excel(writer, index=False, sheet_name='Tareas')
+    
+    if not logs.empty:
+        logs.to_excel(writer, index=False, sheet_name='Bitacora')
+
+st.download_button(
+    label="📥 Descargar Excel",
+    data=buffer.getvalue(),
+    file_name=f"control_operaciones_{datetime.now().strftime('%Y%m%d')}.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
+
 # =============================
 # DASHBOARD KPIs
 # =============================
