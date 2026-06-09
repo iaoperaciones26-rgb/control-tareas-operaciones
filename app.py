@@ -365,7 +365,7 @@ buffer = io.BytesIO()
 
 logs = pd.DataFrame(log_sheet.get_all_records())
 
-# 🔥 lógica inteligente
+# 🔥 lógica inteligente (tareas)
 if df.empty and not df_original.empty:
     descarga_df = df_original
 elif len(df) == len(df_original):
@@ -373,10 +373,23 @@ elif len(df) == len(df_original):
 else:
     descarga_df = df
 
+# 🔥 FILTRAR BITÁCORA SEGÚN TAREAS
+if not logs.empty and "ID" in logs.columns:
+
+    # Normalizar IDs
+    logs["ID"] = logs["ID"].astype(str).str.strip().str.upper()
+    ids_visibles = descarga_df["id"].astype(str).str.strip().str.upper().unique()
+
+    # Filtrar
+    logs = logs[logs["ID"].isin(ids_visibles)]
+
+# 🔥 EXPORTAR
 with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
     
+    # 🧩 Tareas
     descarga_df.to_excel(writer, index=False, sheet_name='Tareas')
     
+    # 📜 Bitácora filtrada
     if not logs.empty:
         logs.to_excel(writer, index=False, sheet_name='Bitacora')
 
