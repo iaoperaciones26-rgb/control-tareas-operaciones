@@ -518,15 +518,12 @@ def abrir_detalle():
     
     col_kpi1, col_kpi2 = st.columns(2)
     
-    # 🎨 Colores dinámicos
     color_etapa = "#28a745" if t['tiempo_etapa_dias'] <= 2 else "#dc3545"
     color_total = "#28a745" if t['tiempo_total_dias'] <= 5 else "#dc3545"
     
-    # 🛑 Manejo de NaN
     tiempo_etapa = 0 if pd.isna(t['tiempo_etapa_dias']) else int(t['tiempo_etapa_dias'])
     tiempo_total = 0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])
     
-    # 🔹 KPI 1
     with col_kpi1:
         st.markdown(f"""
         <div style="
@@ -543,17 +540,16 @@ def abrir_detalle():
                 ⏱ Tiempo en etapa
             </div>
     
-            <div style="
+            <span style="
                 font-size:26px;
                 font-weight:bold;
                 color:{color_etapa};
             ">
                 {tiempo_etapa} días
-            </div>
+            </span>
         </div>
         """, unsafe_allow_html=True)
     
-    # 🔹 KPI 2
     with col_kpi2:
         st.markdown(f"""
         <div style="
@@ -570,13 +566,13 @@ def abrir_detalle():
                 ⏳ Tiempo total
             </div>
     
-            <div style="
+            <span style="
                 font-size:26px;
                 font-weight:bold;
                 color:{color_total};
             ">
                 {tiempo_total} días
-            </div>
+            </span>
         </div>
         """, unsafe_allow_html=True)
     
