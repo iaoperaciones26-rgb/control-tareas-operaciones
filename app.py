@@ -525,56 +525,24 @@ def abrir_detalle():
     tiempo_total = 0 if pd.isna(t['tiempo_total_dias']) else int(t['tiempo_total_dias'])
     
     with col_kpi1:
-        st.markdown(f"""
-        <div style="
-            background:#262730;
-            padding:16px;
-            border-radius:10px;
-            text-align:center;
-        ">
-            <div style="
-                color:#adb5bd;
-                font-size:13px;
-                margin-bottom:6px;
-            ">
-                ⏱ Tiempo en etapa
-            </div>
-    
-            <span style="
-                font-size:26px;
-                font-weight:bold;
-                color:{color_etapa};
-            ">
-                {tiempo_etapa} días
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"""<div style="background:#262730;padding:16px;border-radius:10px;text-align:center;">
+    <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
+    ⏱ Tiempo en etapa
+    </div>
+    <span style="font-size:26px;font-weight:bold;color:{color_etapa};">
+    {tiempo_etapa} días
+    </span>
+    </div>""", unsafe_allow_html=True)
     
     with col_kpi2:
-        st.markdown(f"""
-        <div style="
-            background:#262730;
-            padding:16px;
-            border-radius:10px;
-            text-align:center;
-        ">
-            <div style="
-                color:#adb5bd;
-                font-size:13px;
-                margin-bottom:6px;
-            ">
-                ⏳ Tiempo total
-            </div>
-    
-            <span style="
-                font-size:26px;
-                font-weight:bold;
-                color:{color_total};
-            ">
-                {tiempo_total} días
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f"""<div style="background:#262730;padding:16px;border-radius:10px;text-align:center;">
+    <div style="color:#adb5bd;font-size:13px;margin-bottom:6px;">
+    ⏳ Tiempo total
+    </div>
+    <span style="font-size:26px;font-weight:bold;color:{color_total};">
+    {tiempo_total} días
+    </span>
+    </div>""", unsafe_allow_html=True)
     
     st.markdown("---")
     
