@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 import streamlit.components.v1 as components
+import io
 from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
