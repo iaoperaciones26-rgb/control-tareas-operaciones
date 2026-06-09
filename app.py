@@ -378,7 +378,33 @@ if not df.empty:
     col2.metric("⚠️ Vencidas", vencidas, delta="Crítico" if vencidas > 0 else "OK")
     col3.metric("🔄 En proceso", en_proceso)
     col4.metric("🔥 Alta prioridad", alta)
-    
+
+    # =============================
+    # 📥 DESCARGA EXCEL
+    # =============================
+    import io
+
+    # 🔹 Cargar bitácora
+    logs = pd.DataFrame(log_sheet.get_all_records())
+
+    buffer = io.BytesIO()
+
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+        
+        # 🧩 Hoja tareas
+        df.to_excel(writer, index=False, sheet_name='Tareas')
+        
+        # 📜 Hoja bitácora
+        if not logs.empty:
+            logs.to_excel(writer, index=False, sheet_name='Bitacora')
+
+    st.download_button(
+        label="📊 Descargar base completa",
+        data=buffer.getvalue(),
+        file_name=f"control_operaciones_{datetime.now().strftime('%Y%m%d')}.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 # =============================
 # KANBAN (COMPACTO FINAL LIMPIO)
 # =============================
