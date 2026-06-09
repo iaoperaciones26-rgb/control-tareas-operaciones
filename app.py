@@ -431,7 +431,7 @@ if vista == "📌 Kanban":
 
                 tareas = df[df["estado"] == estado]
 
-                for _, row in tareas.iterrows():
+                for idx, row in tareas.iterrows():
 
                     # 🎨 Color por prioridad
                     color = {
