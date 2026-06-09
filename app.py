@@ -543,8 +543,14 @@ else:
 
     if selected is not None and len(selected) > 0:
         fila = selected.iloc[0]
-        st.session_state["tarea_sel"] = fila["id"]
-        st.session_state["modal_open"] = True
+    
+        # 🔥 SOLO SI CAMBIA O SI EL MODAL ESTÁ CERRADO
+        if (
+            st.session_state.get("tarea_sel") != fila["id"]
+            or not st.session_state.get("modal_open", False)
+        ):
+            st.session_state["tarea_sel"] = fila["id"]
+            st.session_state["modal_open"] = True
         
 # =============================
 # DETALLE (MODAL HÍBRIDO ANCHO)
