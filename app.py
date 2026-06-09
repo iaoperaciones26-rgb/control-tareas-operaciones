@@ -210,7 +210,9 @@ def calcular_tiempos(df):
         return df
 
     # ⏱ Tiempo total
-    df["tiempo_total_dias"] = (ahora - df["fecha_nuevo"]).dt.days
+    df["tiempo_total_dias"] = (
+        ahora - pd.to_datetime(df["fecha_creacion"], errors="coerce")
+    ).dt.days
 
     # ⏱ Tiempo por etapa
     df["tiempo_etapa_dias"] = 0
