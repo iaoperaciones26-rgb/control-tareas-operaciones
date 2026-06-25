@@ -550,6 +550,7 @@ else:
         gridOptions=gb.build(),
         update_mode=GridUpdateMode.MODEL_CHANGED,
         fit_columns_on_grid_load=True,
+        height=600,
         key=f"grid_{st.session_state.get('refresh_key', 0)}"
     )
 
