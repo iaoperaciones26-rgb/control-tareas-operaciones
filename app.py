@@ -187,60 +187,63 @@ def actualizar_estado(id_tarea, nuevo_estado):
     
 def calcular_tiempos(df):
 
-    # 🛑 Si está vacío → no hacer nada
     if df.empty:
         return df
 
     ahora = pd.to_datetime(datetime.now())
 
-    # Columnas de fechas
-    cols_fechas = [
-        "fecha_nuevo",
-        "fecha_en_proceso",
-        "fecha_en_revision",
-        "fecha_revision_final",
-        "fecha_finalizado"
-    ]
+    # Tiempo total
+    df["fecha_creacion"] = pd.to_datetime(
+        df["fecha_creacion"],
+        errors="coerce"
+    )
 
-    # Convertir solo si existen
-    for col in cols_fechas:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
-
-    # 🛑 Validar antes de calcular
-    if "fecha_nuevo" not in df.columns:
-        return df
-
-    # ⏱ Tiempo total
     df["tiempo_total_dias"] = (
-        ahora - pd.to_datetime(df["fecha_creacion"], errors="coerce")
+        ahora - df["fecha_creacion"]
     ).dt.days
 
-    # ⏱ Tiempo por etapa
+
+    # =============================
+    # TIEMPO EN ETAPA DESDE BITACORA
+    # =============================
+
+    logs = pd.DataFrame(log_sheet.get_all_records())
+
     df["tiempo_etapa_dias"] = 0
 
-    for i, row in df.iterrows():
 
-        if row["estado"] == "NUEVO":
-            inicio = row.get("fecha_nuevo")
+    if logs.empty:
+        return df
 
-        elif row["estado"] == "EN PROCESO":
-            inicio = row.get("fecha_en_proceso")
 
-        elif row["estado"] == "EN REVISION":
-            inicio = row.get("fecha_en_revision")
+    logs.columns = ["ID","Fecha / Hora","Detalle"]
 
-        elif row["estado"] == "REVISION FINAL":
-            inicio = row.get("fecha_revision_final")
+    logs["Fecha / Hora"] = pd.to_datetime(
+        logs["Fecha / Hora"],
+        errors="coerce"
+    )
 
-        elif row["estado"] == "FINALIZADO":
-            inicio = row.get("fecha_finalizado")
 
-        else:
-            inicio = None
+    for i,row in df.iterrows():
 
-        if pd.notnull(inicio):
-            df.at[i, "tiempo_etapa_dias"] = (ahora - inicio).days
+        historial = logs[
+            logs["ID"].astype(str) == str(row["id"])
+        ]
+
+        if not historial.empty:
+
+            # último movimiento
+            ultimo_movimiento = historial.sort_values(
+                "Fecha / Hora"
+            ).iloc[-1]["Fecha / Hora"]
+
+
+            if pd.notnull(ultimo_movimiento):
+
+                df.at[i,"tiempo_etapa_dias"] = (
+                    ahora - ultimo_movimiento
+                ).days
+
 
     return df
 
