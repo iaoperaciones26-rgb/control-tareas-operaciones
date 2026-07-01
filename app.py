@@ -726,14 +726,14 @@ def abrir_detalle():
         fila_index = df_local.index[df_local["id"] == t["id"]][0] + 2
 
         sheet.update(f"A{fila_index}:H{fila_index}", [[
-            t["id"],
-            tarea_edit,
+            str(t["id"]),
+            str(tarea_edit),
             ", ".join(responsable_edit),
-            nuevo_estado,
-            prioridad_edit,
-            t["fecha_creacion"],
+            str(nuevo_estado),
+            str(prioridad_edit),
+            str(t["fecha_creacion"]),
             str(fecha_edit),
-            obs
+            str(obs)
         ]])
 
         registrar_bitacora(
