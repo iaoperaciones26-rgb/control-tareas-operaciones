@@ -27,7 +27,7 @@ if not st.session_state["login_ok"]:
 
     if st.button("Ingresar"):
 
-        if password == "OPE2026":
+        if password == "JEAN":
             st.session_state["login_ok"] = True
             st.rerun()
         else:
